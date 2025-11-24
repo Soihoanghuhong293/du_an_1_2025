@@ -1,5 +1,5 @@
 <?php
-
+//hu
 // Model User đại diện cho thực thể người dùng trong hệ thống
 class User
 {
