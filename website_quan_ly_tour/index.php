@@ -13,10 +13,12 @@ require_once __DIR__ . '/src/models/User.php';
 // Nạp các file chứa controller
 require_once __DIR__ . '/src/controllers/HomeController.php';
 require_once __DIR__ . '/src/controllers/AuthController.php';
+require_once __DIR__ . '/src/controllers/AdminController.php';
 
 // Khởi tạo các controller
 $homeController = new HomeController();
 $authController = new AuthController();
+$adminController = new AdminController();
 
 // Xác định route dựa trên tham số act (mặc định là trang chủ '/')
 $act = $_GET['act'] ?? '/';
@@ -34,6 +36,23 @@ match ($act) {
     'check-login' => $authController->checkLogin(),
     'logout' => $authController->logout(),
 
+    //
+    // route admin
+    //
+    'admin/dashboard' => (function () use ($adminController){
+        //yc dnhap
+        requireLogin();
+
+        //ktra quyen
+        if(!isAdmin()){
+            header('location:'. BASE_URL);
+            exit;
+        }
+
+        $adminController->index();
+    })(),
+
     // Đường dẫn không tồn tại
     default => $homeController->notFound(),
 };
+

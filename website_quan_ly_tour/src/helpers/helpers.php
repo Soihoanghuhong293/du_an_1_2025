@@ -133,8 +133,8 @@ function requireAdmin()
 {
     requireLogin();
     
-    if (!isAdmin()) {
-        header('Location: ' . BASE_URL);
+    if (!isLoggedIn() || !currentUser()->isAmin()) {
+        header('Location: ' . BASE_URL . 'login.php');
         exit;
     }
 }

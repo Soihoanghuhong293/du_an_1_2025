@@ -23,6 +23,7 @@ class AuthController
             'redirect' => $redirect,
         ]);
     }
+    
 
     // Xử lý đăng nhập (nhận dữ liệu từ form POST)
     public function checkLogin()
@@ -49,7 +50,6 @@ class AuthController
         if (empty($password)) {
             $errors[] = 'Vui lòng nhập mật khẩu';
         }
-
         // Nếu có lỗi validation thì quay lại form login
         if (!empty($errors)) {
             view('auth.login', [
@@ -60,24 +60,43 @@ class AuthController
             ]);
             return;
         }
+         $user = $this->userModel->findByEmail($email);
+         if(!$user){
+            $errors[] = "Email không tồn tại";
+            view('auth.login', compact('errors','email','redirect'));
+            return;
+         }
+
+        $query = "SELECT password FROM users WHERE email = ?";
+        $stmt = $this->userModel->conn->prepare($query);
+        $stmt->execute([$email]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!password_verify($password, $row['password'])) {
+            $errors[] = "Mật khẩu không đúng";
+            view('auth.login', compact('errors', 'email', 'redirect'));
+            return;
+        }
+        $user = new Usẻ($row);
+
+        // ❗ Check role để vào admin
+        if ($user->role !== 'admin') {
+            $errors[] = "Bạn không có quyền truy cập trang quản trị!";
+            view('auth.login', compact('errors', 'email', 'redirect'));
+            return;
+        }
+
+        // Đăng nhập thành công
+        loginUser($user);
+
+        header("Location: " . BASE_URL . "admin/dashboard");
+        exit;
+    }
 
         // Tạo user mẫu để đăng nhập (không kiểm tra database)
         // Chỉ để demo giao diện
-        $user = new User([
-            'id' => 1,
-            'name' => 'Người dùng mẫu',
-            'email' => $email,
-            'role' => 'huong_dan_vien',
-            'status' => 1,
-        ]);
 
         // Đăng nhập thành công: lưu vào session
-        loginUser($user);
-
-        // Chuyển hướng về trang được yêu cầu hoặc trang chủ
-        header('Location: ' . $redirect);
-        exit;
-    }
 
     // Xử lý đăng xuất
     public function logout()
@@ -89,5 +108,7 @@ class AuthController
         header('Location: ' . BASE_URL . 'welcome');
         exit;
     }
+    
 }
+
 

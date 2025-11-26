@@ -1,5 +1,5 @@
 <?php
-
+require_once './src/models/User.php';
 // Model User đại diện cho thực thể người dùng trong hệ thống
 class User
 {
@@ -32,7 +32,7 @@ class User
         return $this->name;
     }
 
-    // Kiểm tra xem user có phải là admin không
+    // Kiểm tra xem user có phải là admin không 
     // @return bool true nếu là admin, false nếu không
     public function isAdmin()
     {
