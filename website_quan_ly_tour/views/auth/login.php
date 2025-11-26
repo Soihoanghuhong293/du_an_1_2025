@@ -1,5 +1,5 @@
 <?php
-// Sử dụng layout auth và truyền nội dung vào
+// Sử dụng layout auth và truyền nội dung vàob
 ob_start();
 ?>
 <!--begin::Login Content-->
@@ -12,7 +12,7 @@ ob_start();
                         <i class="bi bi-airplane-fill"></i>
                     </div>
                     <h2>
-                        <strong>Quản Lý Tour FPOLYy</strong>
+                        <strong>Quản Lý Tour FPOLYyy</strong>
                     </h2>
                 </a>
                 <div class="mt-2 fw-light fst-italic" style="font-size: 1rem;">
