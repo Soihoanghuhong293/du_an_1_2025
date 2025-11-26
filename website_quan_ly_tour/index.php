@@ -48,7 +48,7 @@ match ($act) {
             exit;
         }
 
-        $adminController->index();
+        $adminController->dashboard();
     })(),
     'admin/dashboard' => (function () use ($adminController){
         //yc dnhap
@@ -59,7 +59,7 @@ match ($act) {
             exit;
         }
 
-        $adminController->index();
+        $adminController->dashboard();
     })(),
 
     // Đường dẫn không tồn tại
