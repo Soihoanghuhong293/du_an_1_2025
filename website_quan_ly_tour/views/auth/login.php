@@ -12,7 +12,7 @@ ob_start();
                         <i class="bi bi-airplane-fill"></i>
                     </div>
                     <h2>
-                        <strong>Quản Lý Tour FPOLY</strong>
+                        <strong>Quản Lý Tour FPOLYy</strong>
                     </h2>
                 </a>
                 <div class="mt-2 fw-light fst-italic" style="font-size: 1rem;">
