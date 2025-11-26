@@ -39,10 +39,20 @@ match ($act) {
     //
     // route admin
     //
+    'admin' => (function () use ($adminController){
+        //yc dnhap
+        requireLogin();
+        //ktra quyen
+        if(!isAdmin()){
+            header('location:'. BASE_URL);
+            exit;
+        }
+
+        $adminController->index();
+    })(),
     'admin/dashboard' => (function () use ($adminController){
         //yc dnhap
         requireLogin();
-
         //ktra quyen
         if(!isAdmin()){
             header('location:'. BASE_URL);

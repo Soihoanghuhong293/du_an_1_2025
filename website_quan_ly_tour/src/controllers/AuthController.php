@@ -3,7 +3,12 @@
 // Controller xử lý các chức năng liên quan đến xác thực (đăng nhập, đăng xuất)
 class AuthController
 {
-    
+    private $userModel;
+
+    public function __construct()
+    {
+        $this->userModel = new User();
+    }
     // Hiển thị form đăng nhập
     public function login()
     {
@@ -77,7 +82,7 @@ class AuthController
             view('auth.login', compact('errors', 'email', 'redirect'));
             return;
         }
-        $user = new Usẻ($row);
+       
 
         // ❗ Check role để vào admin
         if ($user->role !== 'admin') {
