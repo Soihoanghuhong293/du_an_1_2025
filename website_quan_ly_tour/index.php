@@ -3,66 +3,56 @@
 // Nạp cấu hình chung của ứng dụng
 $config = require __DIR__ . '/config/config.php';
 
-// Nạp các file chứa hàm trợ giúp
-require_once __DIR__ . '/src/helpers/helpers.php'; // Helper chứa các hàm trợ giúp (hàm xử lý view, block, asset, session, ...)
-require_once __DIR__ . '/src/helpers/database.php'; // Helper kết nối database(kết nối với cơ sở dữ liệu)
+// Helpers
+require_once __DIR__ . '/src/helpers/helpers.php';
+require_once __DIR__ . '/src/helpers/database.php';
 
-// Nạp các file chứa model
+// Model
 require_once __DIR__ . '/src/models/User.php';
 
-// Nạp các file chứa controller
+// Controllers
 require_once __DIR__ . '/src/controllers/HomeController.php';
 require_once __DIR__ . '/src/controllers/AuthController.php';
 require_once __DIR__ . '/src/controllers/AdminController.php';
 
-// Khởi tạo các controller
+// Khởi tạo controller
 $homeController = new HomeController();
 $authController = new AuthController();
 $adminController = new AdminController();
 
-// Xác định route dựa trên tham số act (mặc định là trang chủ '/')
+// Xác định route
 $act = $_GET['act'] ?? '/';
 
-// Match đảm bảo chỉ một action tương ứng được gọi
 match ($act) {
-    // Trang welcome (cho người chưa đăng nhập) - mặc định khi truy cập '/'
+
     '/', 'welcome' => $homeController->welcome(),
 
-    // Trang home (cho người đã đăng nhập)
     'home' => $homeController->home(),
 
-    // Đường dẫn đăng nhập, đăng xuất
     'login' => $authController->login(),
     'check-login' => $authController->checkLogin(),
     'logout' => $authController->logout(),
 
     //
-    // route admin
+    // Route admin
     //
-    'admin' => (function () use ($adminController){
-        //yc dnhap
+    'admin' => (function () use ($adminController) {
         requireLogin();
-        //ktra quyen
-        if(!isAdmin()){
-            header('location:'. BASE_URL);
+        if (!isAdmin()) {
+            header('location:' . BASE_URL);
             exit;
         }
-
-        $adminController->dashboard();
-    })(),
-    'admin/dashboard' => (function () use ($adminController){
-        //yc dnhap
-        requireLogin();
-        //ktra quyen
-        if(!isAdmin()){
-            header('location:'. BASE_URL);
-            exit;
-        }
-
         $adminController->dashboard();
     })(),
 
-    // Đường dẫn không tồn tại
+    'admin/dashboard' => (function () use ($adminController) {
+        requireLogin();
+        if (!isAdmin()) {
+            header('location:' . BASE_URL);
+            exit;
+        }
+        $adminController->dashboard();
+    })(),
+
     default => $homeController->notFound(),
 };
-
