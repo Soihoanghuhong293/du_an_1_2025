@@ -79,6 +79,8 @@ function logoutUser()
 // Kiểm tra xem user đã đăng nhập chưa
 // @return bool true nếu đã đăng nhập, false nếu chưa
 function isLoggedIn()
+
+
 {
     startSession();
     return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
@@ -129,23 +131,24 @@ function requireLogin($redirectUrl = null)
 }
 
 // Yêu cầu quyền admin: nếu không phải admin thì chuyển hướng về trang chủ
-function requireAdmin()
-{
-    requireLogin();
+// function requireAdmin()
+// {
+//     requireLogin();
     
-    if (!isAdmin()) {
-        header('Location: ' . BASE_URL);
-        exit;
-    }
-}
+//     if (!isAdmin()) {
+//         header('Location: ' . BASE_URL);
+//         exit;
+//     }
+// }
 
 // Yêu cầu quyền hướng dẫn viên hoặc admin
-function requireGuideOrAdmin()
-{
-    requireLogin();
+// function requireGuideOrAdmin()
+// {
+//     requireLogin();
     
-    if (!isGuide() && !isAdmin()) {
-        header('Location: ' . BASE_URL);
-        exit;
-    }
-}
+//     if (!isGuide() && !isAdmin()) {
+//         header('Location: ' . BASE_URL);
+//         exit;
+//     }
+// }
+
