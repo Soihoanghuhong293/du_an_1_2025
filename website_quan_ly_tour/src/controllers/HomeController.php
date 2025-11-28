@@ -47,4 +47,5 @@ class HomeController
             'title' => 'Không tìm thấy trang',
         ]);
     }
+    
 }

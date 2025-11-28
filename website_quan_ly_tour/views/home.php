@@ -9,7 +9,11 @@ ob_start();
     <!-- Default box -->
     <div class="card">
       <div class="card-header">
+<<<<<<< HEAD
         <h3 class="card-title">Chào mừng đến với hệ thống quản lý tours</h3>
+=======
+        <h3 class="card-title">Chào mừng đến với hệ thống quản lý tourrr</h3>
+>>>>>>> 11f51ec63f7155b0a02a45c49afa1511a1026c59
         <div class="card-tools">
           <button
             type="button"

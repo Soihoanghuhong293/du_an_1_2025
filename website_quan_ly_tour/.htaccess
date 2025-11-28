@@ -2,7 +2,11 @@
 RewriteEngine On
 
 # Cập nhật nếu dự án chạy ở path khác
+<<<<<<< HEAD
 RewriteBase /du_an_1_2025/website_quan_ly_tour/
+=======
+RewriteBase /my-project/website_quan_ly_tour/
+>>>>>>> 11f51ec63f7155b0a02a45c49afa1511a1026c59
 
 # Route trang chủ
 RewriteRule ^$ index.php [L,QSA]

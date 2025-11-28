@@ -45,4 +45,29 @@ class User
     {
         return $this->role === 'huong_dan_vien';
     }
+
+    // đăng ký
+    public static function create($data)
+    {
+        $pdo = getDB();
+        $stmt = $pdo->prepare("
+            INSERT INTO users (name, email, password, role, status) 
+            VALUES (:name, :email, :password, :role, :status)
+        ");
+        return $stmt->execute([
+            'name' => $data['fullname'], // map fullname từ form vào cột name DB
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'role' => $data['role'] ?? 'user',
+            'status' => $data['status'] ?? 1,
+        ]);
+    }
+
+    public static function findByEmail($email)
+    {
+        $pdo = getDB();
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
+        $stmt->execute(['email' => $email]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

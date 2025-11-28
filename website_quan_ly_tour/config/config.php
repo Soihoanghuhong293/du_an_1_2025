@@ -5,7 +5,11 @@ if (!defined('BASE_PATH')) {
     define('BASE_PATH', dirname(__DIR__)); // Đường dẫn tuyệt đối tới thư mục gốc của dự án
 }
 if (!defined('BASE_URL')) {
+<<<<<<< HEAD
     define('BASE_URL', '/da1/du_an_1_2025/website_quan_ly_tour/'); // URL cơ bản của dự án(Lưu ý cấp độ trong htdocs hoặc www)
+=======
+    define('BASE_URL', '/my-project/website_quan_ly_tour/'); // URL cơ bản của dự án(Lưu ý cấp độ trong htdocs hoặc www)
+>>>>>>> 11f51ec63f7155b0a02a45c49afa1511a1026c59
 }
 
 // Cấu hình cơ bản cho kết nối CSDL
