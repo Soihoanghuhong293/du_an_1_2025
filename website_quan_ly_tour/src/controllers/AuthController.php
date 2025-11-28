@@ -1,93 +1,161 @@
 <?php
 
-// Controller xử lý các chức năng liên quan đến xác thực (đăng nhập, đăng xuất)
 class AuthController
 {
-    
-    // Hiển thị form đăng nhập
+
+       // HIỂN THỊ FORM ĐĂNG NHẬP
     public function login()
     {
-        // Nếu đã đăng nhập rồi thì chuyển về trang home
+        // Nếu đã đăng nhập → chuyển về home
         if (isLoggedIn()) {
             header('Location: ' . BASE_URL . 'home');
-            exit;   
+            exit;
         }
 
-        // Lấy URL redirect nếu có (để quay lại trang đang xem sau khi đăng nhập)
-        // Mặc định redirect về trang home
+        // URL quay lại sau khi đăng nhập
         $redirect = $_GET['redirect'] ?? BASE_URL . 'home';
 
-        // Hiển thị view login
         view('auth.login', [
             'title' => 'Đăng nhập',
             'redirect' => $redirect,
         ]);
     }
 
-    // Xử lý đăng nhập (nhận dữ liệu từ form POST)
-    public function checkLogin()
+    /* ================================
+        XỬ LÝ ĐĂNG NHẬP
+    ================================= */
+   public function checkLogin()
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: ' . BASE_URL . 'home');
+        exit;
+    }
+
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $errors = [];
+
+    if (empty($email)) $errors[] = 'Vui lòng nhập email';
+    if (empty($password)) $errors[] = 'Vui lòng nhập mật khẩu';
+
+    if (!empty($errors)) {
+        view('auth.login', [
+            'title' => 'Đăng nhập',
+            'errors' => $errors,
+            'email' => $email
+        ]);
+        return;
+    }
+
+    // Lấy user từ DB
+    $user = User::findByEmail($email);
+
+    if (!$user) {
+        $errors[] = 'Email không tồn tại';
+    } elseif (!password_verify($password, $user['password'])) {
+        $errors[] = 'Mật khẩu không đúng';
+    }
+
+    if (!empty($errors)) {
+        view('auth.login', data: [
+            'title' => 'Đăng nhập',
+            'errors' => $errors,
+            'email' => $email
+        ]);
+        return;
+    }
+
+    // Lưu session
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+  loginUser((object)$user);
+
+
+    // Redirect về home
+    header('Location: ' . BASE_URL . 'home');
+    exit;
+}
+
+
+
+        // HIỂN THỊ FORM ĐĂNG KÝ
+    public function register()
     {
-        // Chỉ xử lý khi là POST request
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASE_URL . 'login');
+        if (isLoggedIn()) {
+            header('Location: ' . BASE_URL . '?act=home');
             exit;
         }
 
-        // Lấy dữ liệu từ form
-        $email = $_POST['email'] ?? '';
-        $password = $_POST['password'] ?? '';
-        // Mặc định redirect về trang home sau khi đăng nhập
-        $redirect = $_POST['redirect'] ?? BASE_URL . 'home';
-
-        // Validate dữ liệu đầu vào
-        $errors = [];
-
-        if (empty($email)) {
-            $errors[] = 'Vui lòng nhập email';
-        }
-
-        if (empty($password)) {
-            $errors[] = 'Vui lòng nhập mật khẩu';
-        }
-
-        // Nếu có lỗi validation thì quay lại form login
-        if (!empty($errors)) {
-            view('auth.login', [
-                'title' => 'Đăng nhập',
-                'errors' => $errors,
-                'email' => $email,
-                'redirect' => $redirect,
-            ]);
-            return;
-        }
-
-        // Tạo user mẫu để đăng nhập (không kiểm tra database)
-        // Chỉ để demo giao diện
-        $user = new User([
-            'id' => 1,
-            'name' => 'Người dùng mẫu',
-            'email' => $email,
-            'role' => 'huong_dan_vien',
-            'status' => 1,
+        view('auth.register', [
+            'title' => 'Đăng ký tài khoản'
         ]);
+    }
 
-        // Đăng nhập thành công: lưu vào session
-        loginUser($user);
-
-        // Chuyển hướng về trang được yêu cầu hoặc trang chủ
-        header('Location: ' . $redirect);
+    
+      //  XỬ LÝ ĐĂNG KÝ
+   public function handleRegister()
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: ' . BASE_URL . '?act=register');
         exit;
     }
 
-    // Xử lý đăng xuất
-    public function logout()
-    {
-        // Xóa session và đăng xuất
+    $fullname = trim($_POST['fullname'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $confirm_password = trim($_POST['confirm_password'] ?? '');
+
+    $errors = [];
+
+    if (empty($fullname)) $errors[] = "Vui lòng nhập họ tên";
+    if (empty($email)) $errors[] = "Vui lòng nhập email";
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Email không hợp lệ";
+    if (empty($password)) $errors[] = "Vui lòng nhập mật khẩu";
+    if ($password !== $confirm_password) $errors[] = "Mật khẩu xác nhận không khớp";
+
+    // Kiểm tra email đã tồn tại
+    if (User::findByEmail($email)) {
+        $errors[] = "Email đã được sử dụng";
+    }
+
+    if (!empty($errors)) {
+        view('auth.register', [
+            'title' => 'Đăng ký tài khoản',
+            'errors' => $errors,
+            'fullname' => $fullname,
+            'email' => $email,
+        ]);
+        return;
+    }
+
+    // Lưu user mới
+    User::create([
+        'fullname' => $fullname,
+        'email' => $email,
+        'password' => password_hash($password, PASSWORD_DEFAULT)
+    ]);
+
+    // Chuyển sang trang login
+    header('Location: ' . BASE_URL . 'login');
+    exit;
+}
+public function logout()
+{
+    // Xóa session login
+    if (isset($_SESSION['user'])) {
+        unset($_SESSION['user']);
+    }
+
+    // Hoặc nếu bạn có hàm helper logoutUser()
+    if (function_exists('logoutUser')) {
         logoutUser();
-
-        // Chuyển hướng về trang welcome
-        header('Location: ' . BASE_URL . 'welcome');
-        exit;
     }
+
+    // Chuyển về trang welcome
+    header('Location: ' . BASE_URL . 'welcome');
+    exit;
 }
 
+    
+}
