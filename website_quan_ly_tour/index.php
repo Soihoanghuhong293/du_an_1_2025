@@ -15,10 +15,13 @@ require_once __DIR__ . '/src/models/User.php';
 // Controllers
 require_once __DIR__ . '/src/controllers/HomeController.php';
 require_once __DIR__ . '/src/controllers/AuthController.php';
+require_once __DIR__ . '/src/controllers/BookingController.php';
 
 // Khởi tạo controller
 $homeController = new HomeController();
 $authController = new AuthController();
+$authController = new AuthController();
+$bookingController = new BookingController();
 
 // Lấy tham số act (mặc định '/')
 $act = $_GET['act'] ?? '/';
@@ -49,6 +52,8 @@ match ($act) {
 
     // Đăng xuất
     'logout' => $authController->logout(),
+    // Trang danh sách booking
+'bookings' => $bookingController->index(),
 
     // 404
     default => $homeController->notFound(),

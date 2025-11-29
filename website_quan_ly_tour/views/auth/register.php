@@ -19,7 +19,7 @@ ob_start();
             </div>
 
             <div class="card-body">
-                <h4 class="card-title text-center mb-4 fw-bold card-title-login">Đăng ký tài khoản</h4>
+                <h4 class="card-title text-center mb-4 fw-bold card-title-login">Đăng ký tài khoảnasd</h4>
 
                 <?php if (!empty($errors)): ?>
                 <div class="alert alert-danger fade show" role="alert">

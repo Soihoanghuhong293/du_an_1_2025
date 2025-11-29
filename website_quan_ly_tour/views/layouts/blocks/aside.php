@@ -74,6 +74,31 @@
             </li>
           </ul>
         </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-journal-check"></i>
+            <p>
+              Quản lý Booking
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="<?= BASE_URL . 'bookings' ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Danh sách Booking </p>
+              </a>
+
+            </li>
+            <li class="nav-item">
+               <a href="#" class="nav-link">
+                  <i class="nav-icon bi bi-circle"></i>
+                  <p>Thêm Booking mới</p>
+               </a>
+            </li>
+          </ul>
+
+        </li>
         <?php if (isAdmin()): ?>
           <li class="nav-item">
             <a href="#" class="nav-link">
