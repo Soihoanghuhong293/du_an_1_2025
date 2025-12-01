@@ -13,7 +13,7 @@ function block_path(string $block): string
     return BASE_PATH . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'layouts' . DIRECTORY_SEPARATOR . 'blocks' . DIRECTORY_SEPARATOR . $block . '.php';
 }
 
-// Hàm view: nạp dữ liệu và hiển thị giao diện
+// Hàm view: nạp dữ liệu và hiển thị giao diênz
 function view(string $view, array $data = []): void
 {
     $file = view_path($view);
