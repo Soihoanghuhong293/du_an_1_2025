@@ -97,7 +97,7 @@ class TourController {
             'title' => 'Chỉnh sửa Tour',
             'content' => $content
         ]);
-    }
+    }   
 
     // =============================================================
     // ⭐ 4. Hành động delete (Xóa tour)
