@@ -13,9 +13,14 @@ class TourController {
     // =============================================================
     public function index() {
         $tours = $this->tourModel->getAll(); 
-        
+        ob_start();
         // >>> changed: use view() helper to load view from views/tour/list.php
         view('tour.list', ['tours' => $tours]);
+        $content = ob_get_clean();
+        view('layouts.AdminLayout', [
+            'title' => 'Danh sách Tour',
+            'content' => $content
+        ]);
     }
 
     // =============================================================
@@ -43,9 +48,14 @@ class TourController {
                 }
             }
         }
-
+        ob_start();
         // >>> changed: use view() helper so layout logic is applied
         view('tour.add', ['errors' => $errors]);
+        $content = ob_get_clean();
+        view('layouts.AdminLayout', [
+            'title' => 'Thêm Tour Mới',
+            'content' => $content
+        ]);
     }
 
     // =============================================================
@@ -79,9 +89,14 @@ class TourController {
             }
             $tour = array_merge($tour, $data); 
         }
-
+        ob_start();
         // >>> changed: use view() helper and pass $tour + $errors
         view('tour.edit', ['tour' => $tour, 'errors' => $errors]);
+        $content = ob_get_clean();
+        view('layouts.AdminLayout', [
+            'title' => 'Chỉnh sửa Tour',
+            'content' => $content
+        ]);
     }
 
     // =============================================================
@@ -97,4 +112,21 @@ class TourController {
             die("Xóa tour thất bại!");
         }
     }
+    function view($path, $data = [])
+{
+    // chuyển dots → slash: 'tour.list' => 'tour/list'
+    $path = str_replace('.', '/', $path);
+
+    // tạo biến từ mảng $data
+    extract($data);
+
+    // đường dẫn tới thư mục views
+    $file = __DIR__ . '/../views/' . $path . '.php';
+
+    if (file_exists($file)) {
+        require $file;
+    } else {
+        echo "View not found: " . $file;
+    }
+}
 }
