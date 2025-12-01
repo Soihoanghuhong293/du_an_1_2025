@@ -42,4 +42,42 @@ function getDB()
         return null;
     }
 }
+class DB {
+    private $pdo;
+
+    public function __construct() {
+        // Lấy đối tượng PDO từ hàm helper getDB()
+        $this->pdo = getDB();
+        if (!$this->pdo) {
+            die("Không thể kết nối đến cơ sở dữ liệu.");
+        }
+    }
+
+    /**
+     * Thực thi truy vấn SELECT và trả về PDOStatement đã thực thi.
+     * Dùng cho Tour.php: $this->db->query($sql)->fetchAll();
+     */
+    public function query($sql, $params = []) {
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+            return $stmt; // Trả về PDOStatement
+        } catch (PDOException $e) {
+            die("Lỗi truy vấn: " . $e->getMessage() . " | SQL: " . $sql);
+        }
+    }
+
+    /**
+     * Thực thi truy vấn INSERT/UPDATE/DELETE.
+     * Dùng cho Tour.php: $this->db->execute($sql, $data);
+     */
+    public function execute($sql, $params = []) {
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute($params); // Trả về true/false
+        } catch (PDOException $e) {
+            die("Lỗi thực thi: " . $e->getMessage() . " | SQL: " . $sql);
+        }
+    }
+}
 
