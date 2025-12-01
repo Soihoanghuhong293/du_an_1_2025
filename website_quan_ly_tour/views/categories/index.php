@@ -10,6 +10,7 @@
                 <th>Status</th>
                 <th>Created at</th>
                 <th>Updated at</th>
+                <th>Hành động</th>
             </tr>
         </thead>
 
@@ -23,6 +24,18 @@
                         <td><?= htmlspecialchars($item['status']) ?></td>
                         <td><?= htmlspecialchars($item['created_at']) ?></td>
                         <td><?= htmlspecialchars($item['updated_at']) ?></td>
+                        <td>
+                                <a href="index.php?act=category-edit&id=<?= $item['id'] ?>" class="btn btn-warning btn-sm">Sửa</a>
+
+                             <a href="index.php?act=category-delete&id=<?= $item['id'] ?>"
+                            onclick="return confirm('Bạn muốn xóa thật không ?')"
+                            class ="btn btn-danger btn-sm">
+                            Xóa
+                                
+                            </a>
+                        </td>
+                        
+                        
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>
