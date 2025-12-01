@@ -70,7 +70,7 @@ ob_start();
               Chưa đăng nhập
             </h4>
             <p class="mb-0">
-              Vui lòng <a href="<?= BASE_URL ?>?act=login" class="alert-link">đăng nhập</a> để sử dụng đầy đủ chức năng.
+              Vui lòng <a href="<?= BASE_URL ?>?act=login" class="alert-link">Đăng nhập</a> để sử dụng đầy đủ chức năng.
             </p>
           </div>
         <?php endif; ?>
