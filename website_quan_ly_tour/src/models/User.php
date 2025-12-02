@@ -72,7 +72,7 @@ class User
         return $stmt->execute([
             'name' => $data['name'], // bắt buộc phải có key 'name'
             'email' => $data['email'],
-            'password' => password_hash($data['password'], PASSWORD_BCRYPT),
+            'password' => $data['password'],
             'role' => $data['role'] ?? 'user',
             'status' => $data['status'] ?? 1,
         ]);
@@ -103,7 +103,7 @@ class User
     public function delete()
     {
         $pdo = getDB();
-        $stmt = $pdo->prepare("DELETE FROM users WHERE id=:id");
+        $stmt = $pdo->prepare(query: "DELETE FROM users WHERE id=:id");
         return $stmt->execute(['id' => $this->id]);
     }
 }

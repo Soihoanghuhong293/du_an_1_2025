@@ -53,23 +53,7 @@
         </li>
 
         <!-- Quản lý Khách hàng -->
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon bi bi-people-fill"></i>
-            <p>
-              Quản lý Khách hàng
-              <i class="nav-arrow bi bi-chevron-right"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="<?= BASE_URL . 'users' ?>" class="nav-link">
-                <i class="nav-icon bi bi-circle"></i>
-                <p>Danh sách Khách hàng</p>
-              </a>
-            </li>
-          </ul>
-        </li>
+        
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-journal-check"></i>
@@ -95,6 +79,8 @@
           </ul>
 
         </li>
+                 <?php if (isAdmin()): ?>
+
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-journal-check"></i>
@@ -128,6 +114,8 @@
           </ul>
 
         </li>
+                <?php endif; ?>
+
 
         <!-- Quản lý Người dùng (chỉ admin) -->
         <?php if (isAdmin()): ?>

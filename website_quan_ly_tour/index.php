@@ -74,7 +74,7 @@ match ($act) {
     // ===============================
 
     // 1. Hiển thị danh sách tour
-    'tour' => $tourController->index(), 
+    'tours' => $tourController->index(), 
 
     // 2. Form thêm tour & xử lý thêm tour
     'tour-add' => $tourController->add(), 
@@ -85,7 +85,7 @@ match ($act) {
     // 4. Xử lý xóa tour. Lấy id từ URL: ?act=tour-delete&id=123
     'tour-delete' => $tourController->delete($_GET['id'] ?? null),
     'category-add' => $categoryController->add(),
-'category-edit' => $categoryController->edit($_GET['id'] ?? null),
+    'category-edit' => $categoryController->edit($_GET['id'] ?? null),
 
     
     // ===============================

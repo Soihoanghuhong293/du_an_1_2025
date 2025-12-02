@@ -116,14 +116,13 @@ class AuthController
         }
 
         // Lưu user mới (name thay cho fullname, password chưa hash)
-        User::create([
-            'name' => $fullname,   // đổi từ fullname → name cho đồng bộ với DB
-            'email' => $email,
-            'password' => $password, // KHÔNG hash ở đây nữa
-            'role' => 'user',
-            'status' => 1
-        ]);
-        
+       User::create([
+    'name' => $fullname,
+    'email' => $email,
+    'password' => password_hash($password, PASSWORD_DEFAULT),
+    'role' => 'user',
+    'status' => 1
+]);
         header('Location: ' . BASE_URL . 'login');
         exit;
     }
