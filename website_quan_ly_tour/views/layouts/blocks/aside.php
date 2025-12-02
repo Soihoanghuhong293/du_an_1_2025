@@ -26,6 +26,7 @@
         </li>
 
         <!-- Quản lý Tour -->
+         <?php if (isAdmin()): ?>
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-airplane-engines"></i>
@@ -43,6 +44,7 @@
           </a>
             </li>
             </li>
+            
             <li class="nav-item">
               <a href="<?= BASE_URL . 'tours/create' ?>" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
@@ -51,9 +53,10 @@
             </li>
           </ul>
         </li>
+        <?php endif; ?>
 
         <!-- Quản lý Khách hàng -->
-        
+        <?php if (isAdmin()): ?>
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-journal-check"></i>
@@ -79,6 +82,7 @@
           </ul>
 
         </li>
+        <?php endif; ?>
                  <?php if (isAdmin()): ?>
 
         <li class="nav-item">
@@ -132,6 +136,25 @@
               <a href="<?= BASE_URL . 'users' ?>" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Danh sách Người dùng</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <?php endif; ?>
+          <?php if (isGuide()): ?>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-person-gear"></i>
+            <p>
+              Danh sách Tour phụ trách
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="<?= BASE_URL . 'u' ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Danh sách </p>
               </a>
             </li>
           </ul>

@@ -86,9 +86,9 @@ ob_start();
                         <button type="submit" class="btn btn-login btn-lg">
                             <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
                         </button>
-<p>Bạn chưa có tài khoản?
+<!-- <p>Bạn chưa có tài khoản?
     <a href="<?= BASE_URL ?>?act=register">Click vào đây để đăng ký</a>
-</p>
+</p> -->
 
          </div>
                 </form>
