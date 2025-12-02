@@ -9,7 +9,7 @@ ob_start();
     <!-- Default box -->
     <div class="card">
       <div class="card-header">
-        <h3 class="card-title">Chào mừng đến với hệ thống quản lý tourrr</h3>
+        <h3 class="card-title">Chào mừng đến với hệ thống quản lý tour</h3>
         <div class="card-tools">
           <button
             type="button"
@@ -70,7 +70,7 @@ ob_start();
               Chưa đăng nhập
             </h4>
             <p class="mb-0">
-              Vui lòng <a href="<?= BASE_URL ?>?act=login" class="alert-link">đăng nhập</a> để sử dụng đầy đủ chức năng.
+              Vui lòng <a href="<?= BASE_URL ?>?act=login" class="alert-link">Đăng nhập</a> để sử dụng đầy đủ chức năng.
             </p>
           </div>
         <?php endif; ?>
