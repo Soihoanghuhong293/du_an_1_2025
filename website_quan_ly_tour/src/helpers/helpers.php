@@ -1,19 +1,19 @@
 <?php
 
-// Hàm xác định đường dẫn tuyệt đối tới file view tương ứng
+// Hàm xác định đường dẫn tuyệt đối tới file view
 function view_path(string $view): string
 {
     $normalized = str_replace('.', DIRECTORY_SEPARATOR, $view);
     return BASE_PATH . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . $normalized . '.php';
 }
 
-// Hàm xác định đường dẫn tuyệt đối tới file block tương ứng(thành phần layouts)
+// Hàm xác định đường dẫn tuyệt đối tới file block (layouts)
 function block_path(string $block): string
 {
     return BASE_PATH . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'layouts' . DIRECTORY_SEPARATOR . 'blocks' . DIRECTORY_SEPARATOR . $block . '.php';
 }
 
-// Hàm view: nạp dữ liệu và hiển thị giao diện
+// Hiển thị view với dữ liệu truyền vào
 function view(string $view, array $data = []): void
 {
     $file = view_path($view);
@@ -22,11 +22,11 @@ function view(string $view, array $data = []): void
         throw new RuntimeException("View '{$view}' not found at {$file}");
     }
 
-    extract($data, EXTR_OVERWRITE); // biến hóa mảng $data thành biến riêng lẻ
+    extract($data, EXTR_OVERWRITE); // Biến hóa mảng $data thành biến riêng lẻ
     include $file;
 }
 
-// Hàm include block: nạp một block từ thư mục blocks(thành phần layouts)
+// Hiển thị block layout với dữ liệu truyền vào
 function block(string $block, array $data = []): void
 {
     $file = block_path($block);
@@ -35,93 +35,80 @@ function block(string $block, array $data = []): void
         throw new RuntimeException("Block '{$block}' not found at {$file}");
     }
 
-    extract($data, EXTR_OVERWRITE); // biến hóa mảng $data thành biến riêng lẻ
+    extract($data, EXTR_OVERWRITE);
     include $file;
 }
 
-// Tạo đường dẫn tới asset (css/js/images) trong thư mục public(tài nguyên)
+// Tạo đường dẫn tới asset trong thư mục public
 function asset(string $path): string
 {
     $trimmed = ltrim($path, '/');
     return rtrim(BASE_URL, '/') . '/public/' . $trimmed;
 }
 
-// Khởi động session nếu chưa khởi động(session là một cơ chế để lưu trữ dữ liệu trên server)
-function startSession()
+// Khởi động session nếu chưa khởi động
+function startSession(): void
 {
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
 }
 
-// Lưu thông tin user vào session sau khi đăng nhập thành công
-// @param User $user Đối tượng User cần lưu vào session
-function loginUser($user)
+// Lưu thông tin user vào session sau khi đăng nhập
+function loginUser(User $user): void
 {
     startSession();
-    $_SESSION['user_id'] = $user->id;
-    $_SESSION['user_name'] = $user->name;
+    $_SESSION['user_id']    = $user->id;
+    $_SESSION['user_name']  = $user->name;
     $_SESSION['user_email'] = $user->email;
-    $_SESSION['user_role'] = $user->role;
+    $_SESSION['user_role']  = $user->role;
 }
 
 // Đăng xuất: xóa toàn bộ thông tin user khỏi session
-function logoutUser()
+function logoutUser(): void
 {
     startSession();
-    unset($_SESSION['user_id']);
-    unset($_SESSION['user_name']);
-    unset($_SESSION['user_email']);
-    unset($_SESSION['user_role']);
+    unset($_SESSION['user_id'], $_SESSION['user_name'], $_SESSION['user_email'], $_SESSION['user_role']);
     session_destroy();
 }
 
 // Kiểm tra xem user đã đăng nhập chưa
-// @return bool true nếu đã đăng nhập, false nếu chưa
-function isLoggedIn()
-
-
+function isLoggedIn(): bool
 {
     startSession();
     return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
 }
 
 // Lấy thông tin user hiện tại từ session
-// @return User|null Trả về đối tượng User nếu đã đăng nhập, null nếu chưa
-function getCurrentUser()
+function getCurrentUser(): ?User
 {
-    if (!isLoggedIn()) {
-        return null;
-    }
+    if (!isLoggedIn()) return null;
 
     startSession();
     return new User([
-        'id' => $_SESSION['user_id'],
-        'name' => $_SESSION['user_name'],
+        'id'    => $_SESSION['user_id'],
+        'name'  => $_SESSION['user_name'],
         'email' => $_SESSION['user_email'],
-        'role' => $_SESSION['user_role'],
+        'role'  => $_SESSION['user_role'],
     ]);
 }
 
-// Kiểm tra xem user hiện tại có phải là admin không
-// @return bool true nếu là admin, false nếu không
-function isAdmin()
+// Kiểm tra xem user hiện tại có phải admin
+function isAdmin(): bool
 {
     $user = getCurrentUser();
-    return $user && $user->isAdmin();
+    return $user ? $user->isAdmin() : false;
 }
 
-// Kiểm tra xem user hiện tại có phải là hướng dẫn viên không
-// @return bool true nếu là hướng dẫn viên, false nếu không
-function isGuide()
+// Kiểm tra xem user hiện tại có phải hướng dẫn viên
+function isGuide(): bool
 {
     $user = getCurrentUser();
-    return $user && $user->isGuide();
+    return $user ? $user->isGuide() : false;
 }
 
-// Yêu cầu đăng nhập: nếu chưa đăng nhập thì chuyển hướng về trang login
-// @param string $redirectUrl URL chuyển hướng sau khi đăng nhập (mặc định là trang hiện tại)
-function requireLogin($redirectUrl = null)
+// Yêu cầu đăng nhập: nếu chưa login thì chuyển hướng về trang login
+function requireLogin(string $redirectUrl = null): void
 {
     if (!isLoggedIn()) {
         $redirect = $redirectUrl ?: $_SERVER['REQUEST_URI'];
@@ -130,25 +117,22 @@ function requireLogin($redirectUrl = null)
     }
 }
 
-// Yêu cầu quyền admin: nếu không phải admin thì chuyển hướng về trang chủ
-// function requireAdmin()
-// {
-//     requireLogin();
-    
-//     if (!isAdmin()) {
-//         header('Location: ' . BASE_URL);
-//         exit;
-//     }
-// }
+// Yêu cầu quyền admin: nếu không phải admin thì chuyển về trang chủ
+function requireAdmin(): void
+{
+    requireLogin();
+    if (!isAdmin()) {
+        header('Location: ' . BASE_URL);
+        exit;
+    }
+}
 
 // Yêu cầu quyền hướng dẫn viên hoặc admin
-// function requireGuideOrAdmin()
-// {
-//     requireLogin();
-    
-//     if (!isGuide() && !isAdmin()) {
-//         header('Location: ' . BASE_URL);
-//         exit;
-//     }
-// }
-
+function requireGuideOrAdmin(): void
+{
+    requireLogin();
+    if (!isGuide() && !isAdmin()) {
+        header('Location: ' . BASE_URL);
+        exit;
+    }
+}
