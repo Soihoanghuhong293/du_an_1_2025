@@ -44,10 +44,11 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="<?= BASE_URL . 'tour' ?>" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Danh sách Tour</p>
-              </a>
+          </a>
+            </li>
             </li>
             <li class="nav-item">
               <a href="#" class="nav-link">
@@ -73,6 +74,51 @@
               </a>
             </li>
           </ul>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-journal-check"></i>
+            <p>
+              Quản lý Booking
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="<?= BASE_URL . 'bookings' ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Danh sách Booking </p>
+              </a>
+
+            </li>
+            <li class="nav-item">
+               <a href="#" class="nav-link">
+                  <i class="nav-icon bi bi-circle"></i>
+                  <p>Thêm Booking mới</p>
+               </a>
+            </li>
+          </ul>
+
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-journal-check"></i>
+            <p>
+              Quản lý Danh muc
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="<?= BASE_URL . 'categories' ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Danh sách Danh muc </p>
+              </a>
+
+            </li>
+            
+          </ul>
+
         </li>
         <?php if (isAdmin()): ?>
           <li class="nav-item">

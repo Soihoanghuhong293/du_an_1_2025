@@ -25,13 +25,15 @@ require_once __DIR__ . '/src/models/TourModel.php';
 require_once __DIR__ . '/src/controllers/HomeController.php';
 require_once __DIR__ . '/src/controllers/AuthController.php';
 require_once __DIR__ . '/src/controllers/TourController.php';
+require_once __DIR__ . '/src/controllers/BookingController.php';
+require_once __DIR__ . '/src/controllers/CategoryController.php';
 
 // Khởi tạo controller
 $homeController = new HomeController();
 $authController = new AuthController();
 $tourController = new TourController();
-
-// Lấy tham số act (mặc định '/')
+$bookingController = new BookingController();
+$categoryController = new CategoryController();// Lấy tham số act (mặc định '/')
 $act = $_GET['act'] ?? '/';
 
 match ($act) {
@@ -60,9 +62,13 @@ match ($act) {
 
     // Đăng xuất
     'logout' => $authController->logout(),
+    // Trang danh sách booking
+'bookings' => $bookingController->index(),
+ 'users' => $userController->index(),
+ 'categories' => $categoryController->index(),
 
-    // 404
-    default => $homeController->notFound(),
+  
+
 
     // ===============================
     // ⭐ ROUTER QUẢN LÝ TOUR (BỔ SUNG)
@@ -80,4 +86,6 @@ match ($act) {
     // 4. Xử lý xóa tour. Lấy id từ URL: ?act=tour-delete&id=123
     'tour-delete' => $tourController->delete($_GET['id'] ?? null),
     
+    // 404
+    default => $homeController->notFound(),
 };
