@@ -2,38 +2,31 @@
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
   <!--begin::Sidebar Brand-->
   <div class="sidebar-brand">
-    <!--begin::Brand Link-->
     <a href="<?= BASE_URL . 'home' ?>" class="brand-link">
-      <!--begin::Brand Image-->
       <img
         src="<?= asset('dist/assets/img/AdminLTELogo.png') ?>"
         alt="AdminLTE Logo"
         class="brand-image opacity-75 shadow"
       />
-      <!--end::Brand Image-->
-      <!--begin::Brand Text-->
       <span class="brand-text fw-light">Quản Lý Tour</span>
-      <!--end::Brand Text-->
     </a>
-    <!--end::Brand Link-->
   </div>
   <!--end::Sidebar Brand-->
-  <!--begin::Sidebar Wrapper-->
+
   <div class="sidebar-wrapper">
     <nav class="mt-2">
-      <!--begin::Sidebar Menu-->
-      <ul
-        class="nav sidebar-menu flex-column"
-        data-lte-toggle="treeview"
-        role="menu"
-        data-accordion="false"
-      >
+      <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+        
+        <!-- Dashboard -->
         <li class="nav-item">
           <a href="<?= BASE_URL . 'home' ?>" class="nav-link">
             <i class="nav-icon bi bi-speedometer"></i>
             <p>Dashboard</p>
           </a>
         </li>
+
+        <!-- Quản lý Tour -->
+         <?php if (isAdmin()): ?>
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-airplane-engines"></i>
@@ -44,55 +37,130 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+
+              <a href="<?= BASE_URL . 'tours' ?>" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Danh sách Tour</p>
-              </a>
+          </a>
             </li>
+            </li>
+            
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="<?= BASE_URL . 'tours/create' ?>" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Thêm Tour mới</p>
               </a>
             </li>
           </ul>
         </li>
+        <?php endif; ?>
+
+        <!-- Quản lý Khách hàng -->
+        <?php if (isAdmin()): ?>
         <li class="nav-item">
           <a href="#" class="nav-link">
-            <i class="nav-icon bi bi-people-fill"></i>
+            <i class="nav-icon bi bi-journal-check"></i>
             <p>
-              Quản lý Khách hàng
+              Quản lý Booking
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="<?= BASE_URL . 'bookings' ?>" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
-                <p>Danh sách Khách hàng</p>
+                <p>Danh sách Booking </p>
+              </a>
+
+            </li>
+            <li class="nav-item">
+               <a href="<?= BASE_URL . 'booking-create' ?>" class="nav-link">
+                  <i class="nav-icon bi bi-circle"></i>
+                  <p>Thêm Booking mới</p>
+               </a>
+            </li>
+          </ul>
+
+        </li>
+        <?php endif; ?>
+                 <?php if (isAdmin()): ?>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-journal-check"></i>
+            <p>
+              Quản lý Danh muc<i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="<?= BASE_URL . 'categories' ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Danh sách Danh muc </p>
+              </a>
+
+            </li>
+            <li class="nav-item">
+              <a href="index.php?act=category-add" class="nav-link">
+
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Thêm danh mục </p>
+              </a>
+
+            </li>
+            
+            
+          </ul>
+          <ul class="nav nav-treeview">
+            
+            
+          </ul>
+
+        </li>
+                <?php endif; ?>
+
+
+        <!-- Quản lý Người dùng (chỉ admin) -->
+        <?php if (isAdmin()): ?>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-person-gear"></i>
+            <p>
+              Quản lý Người dùng
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="<?= BASE_URL . 'users' ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Danh sách Người dùng</p>
               </a>
             </li>
           </ul>
         </li>
-        <?php if (isAdmin()): ?>
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="nav-icon bi bi-person-gear"></i>
-              <p>
-                Quản lý Người dùng
-                <i class="nav-arrow bi bi-chevron-right"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="#" class="nav-link">
-                  <i class="nav-icon bi bi-circle"></i>
-                  <p>Danh sách Người dùng</p>
-                </a>
-              </li>
-            </ul>
-          </li>
         <?php endif; ?>
+          <?php if (isGuide()): ?>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-person-gear"></i>
+            <p>
+              Danh sách Tour phụ trách
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="<?= BASE_URL . 'u' ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>Danh sách </p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <?php endif; ?>
+
+        <!-- Hệ thống -->
         <li class="nav-header">HỆ THỐNG</li>
         <li class="nav-item">
           <a href="<?= BASE_URL . 'logout' ?>" class="nav-link">
@@ -100,11 +168,9 @@
             <p>Đăng xuất</p>
           </a>
         </li>
+
       </ul>
-      <!--end::Sidebar Menu-->
     </nav>
   </div>
-  <!--end::Sidebar Wrapper-->
 </aside>
 <!--end::Sidebar-->
-
