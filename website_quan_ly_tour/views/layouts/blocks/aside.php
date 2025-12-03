@@ -89,8 +89,7 @@
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-journal-check"></i>
             <p>
-              Quản lý Danh muc
-              <i class="nav-arrow bi bi-chevron-right"></i>
+              Quản lý Danh muc<i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
           <ul class="nav nav-treeview">

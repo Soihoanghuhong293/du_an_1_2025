@@ -22,14 +22,14 @@
         </thead>
 
         <tbody>
-            <?php foreach ($tours as $tour): ?>
+        <?php foreach ($tours as $tour): ?>
 
             <?php
-                $schedule = json_decode($tour['schedule'], true);
-                $images = json_decode($tour['images'], true);
-                $prices = json_decode($tour['prices'], true);
-                $policies = json_decode($tour['policies'], true);
-                $suppliers = json_decode($tour['suppliers'], true);
+                $schedule  = $tour['lich_trinh'] ?? [];
+                $images    = $tour['hinh_anh'] ?? [];
+                $prices    = $tour['gia_chi_tiet'] ?? [];
+                $policies  = $tour['chinh_sach'] ?? [];
+                $suppliers = $tour['nha_cung_cap'] ?? [];
             ?>
 
             <tr>
@@ -42,7 +42,7 @@
                 <td>
                     <?php if (!empty($schedule['days'])): ?>
                         <?php foreach ($schedule['days'] as $day): ?>
-                            <strong>Ngày:</strong> <?= $day['date'] ?><br>
+                            <strong>Ngày:</strong> <?= htmlspecialchars($day['date']) ?><br>
                             <strong>Hoạt động:</strong>
                             <ul>
                                 <?php foreach ($day['activities'] as $act): ?>
@@ -50,32 +50,42 @@
                                 <?php endforeach; ?>
                             </ul>
                         <?php endforeach; ?>
+                    <?php else: ?>
+                        <em>Không có dữ liệu</em>
                     <?php endif; ?>
                 </td>
 
                 <!-- Hình ảnh -->
                 <td>
-                    <?php foreach ($images as $img): ?>
-                        <span class="badge bg-info text-dark"><?= $img ?></span><br>
-                    <?php endforeach; ?>
+                    <?php if (!empty($images)): ?>
+                        <?php foreach ($images as $img): ?>
+                            <span class="badge bg-info text-dark"><?= htmlspecialchars($img) ?></span><br>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <em>Không có ảnh</em>
+                    <?php endif; ?>
                 </td>
 
                 <!-- Giá chi tiết -->
                 <td>
-                    Người lớn: <strong><?= number_format($prices['adult']) ?> VNĐ</strong><br>
-                    Trẻ em: <strong><?= number_format($prices['child']) ?> VNĐ</strong>
+                    Người lớn: <strong><?= number_format($prices['adult'] ?? 0) ?> VNĐ</strong><br>
+                    Trẻ em: <strong><?= number_format($prices['child'] ?? 0) ?> VNĐ</strong>
                 </td>
 
                 <!-- Chính sách -->
                 <td>
-                    <?= htmlspecialchars($policies['booking'] ?? '') ?>
+                    <?= htmlspecialchars($policies['booking'] ?? 'Không có chính sách') ?>
                 </td>
 
                 <!-- Nhà cung cấp -->
                 <td>
-                    <?php foreach ($suppliers as $s): ?>
-                        <span class="badge bg-secondary"><?= htmlspecialchars($s) ?></span><br>
-                    <?php endforeach; ?>
+                    <?php if (!empty($suppliers)): ?>
+                        <?php foreach ($suppliers as $s): ?>
+                            <span class="badge bg-secondary"><?= htmlspecialchars($s) ?></span><br>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <em>Không có NCC</em>
+                    <?php endif; ?>
                 </td>
 
                 <td><?= number_format($tour['price']) ?> VNĐ</td>
@@ -93,7 +103,7 @@
                 </td>
             </tr>
 
-            <?php endforeach; ?>
+        <?php endforeach; ?>
         </tbody>
     </table>
 </div>
