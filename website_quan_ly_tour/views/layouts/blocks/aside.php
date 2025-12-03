@@ -74,7 +74,7 @@
 
             </li>
             <li class="nav-item">
-               <a href="#" class="nav-link">
+               <a href="<?= BASE_URL . 'booking-create' ?>" class="nav-link">
                   <i class="nav-icon bi bi-circle"></i>
                   <p>Thêm Booking mới</p>
                </a>

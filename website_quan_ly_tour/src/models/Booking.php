@@ -1,12 +1,12 @@
 <?php
 
-require_once __DIR__ . '/../helpers/database.php'; // ⭐ FIX
+require_once __DIR__ . '/../helpers/database.php';
 
 class Booking
 {
     public static function all()
     {
-        $conn = getDB();
+        $conn = getDB(); // ✅ Đã đúng
 
         $sql = "SELECT 
                 b.*, 
@@ -15,18 +15,61 @@ class Booking
                 u_guide.name AS guide_name,
                 ts.name AS status_name
             FROM bookings b
-            -- Nối bảng tours để lấy tên tour
             LEFT JOIN tours t ON b.tour_id = t.id
-            -- Nối bảng users (lần 1) để lấy tên người tạo
             LEFT JOIN users u_creator ON b.created_by = u_creator.id
-            -- Nối bảng users (lần 2) để lấy tên HDV
             LEFT JOIN users u_guide ON b.assigned_guide_id = u_guide.id
-            -- Nối bảng status để lấy tên trạng thái (nếu cần)
             LEFT JOIN tour_statuses ts ON b.status = ts.id
             ORDER BY b.created_at DESC";
         $stmt = $conn->prepare($sql);
         $stmt->execute();
 
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+
+    public static function create($data)
+    {
+        $conn = getDB();
+        $sql = "INSERT INTO bookings (tour_id, created_by, assigned_guide_id, status, start_date, end_date, notes, created_at)
+                VALUES (:tour_id, :created_by, :assigned_guide_id, :status, :start_date, :end_date, :notes, NOW())";
+
+        $stmt = $conn->prepare($sql);
+
+        $stmt -> bindParam(':tour_id', $data['tour_id']);
+        $stmt -> bindParam(':created_by', $data['created_by']);
+        $stmt->bindParam(':assigned_guide_id', $data['assigned_guide_id']);
+        $stmt->bindParam(':status', $data['status']);
+         $stmt->bindParam(':start_date', $data['start_date']);
+         $stmt->bindParam(':end_date', $data['end_date']);
+          $stmt->bindParam(':notes', $data['notes']);
+
+          return $stmt -> execute();
+    }
+
+
+
+    public static function getTours(){
+           $conn = getDB();
+        
+        $stmt = $conn->query("SELECT id, name FROM tours WHERE status = 1");
+        return $stmt-> fetchAll(PDO::FETCH_ASSOC);
+    }
+    // 3. Hàm lấy danh sách HDV
+    public static function getGuides() {
+        // ❌ Bỏ dòng: global $conn;
+        $conn = getDB(); // ✅ Sửa thành dòng này
+        
+        $stmt = $conn->query("SELECT id, name FROM users WHERE role = 'guide'");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // 4. Hàm lấy Status
+    public static function getStatuses() {
+        // ❌ Bỏ dòng: global $conn;
+        $conn = getDB(); // ✅ Sửa thành dòng này
+        
+        $stmt = $conn->query("SELECT id, name FROM tour_statuses");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

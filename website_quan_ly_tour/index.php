@@ -60,6 +60,14 @@ match ($act) {
     'logout' => $authController->logout(),
     // Trang danh sách booking
 'bookings' => $bookingController->index(),
+'booking-create' => $bookingController->create(),
+
+    // 2. Xử lý lưu dữ liệu (khi bấm nút Submit)
+    'booking-store'  => $bookingController->store(),
+
+
+
+
  'users' => $userController->index(),
 
  'categories' => $categoryController->index(),
