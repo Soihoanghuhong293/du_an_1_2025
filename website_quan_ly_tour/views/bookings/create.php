@@ -1,8 +1,19 @@
-<div class="content-wrapper p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>Tạo Booking Mới</h3>
-        <a href="index.php?controller=booking&action=index" class="btn btn-secondary">Quay lại</a>
-    </div>
+
+<div class="row">
+  <div class="col-12">
+    <!-- Card Danh mục -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Tạo Booking</h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+            <i class="bi bi-dash-lg"></i>
+          </button>
+        </div>
+      </div>
+
+<div class="card-body">
+    
 
     <div class="card">
         <div class="card-body">
@@ -65,3 +76,22 @@
         </div>
     </div>
 </div>
+ </div>
+    <!-- /.card -->
+  </div>
+</div>
+<!-- /
+<?php
+// Lấy toàn bộ nội dung vừa tạo
+$content = ob_get_clean();
+
+// Hiển thị layout Admin
+view('layouts.AdminLayout', [
+    'title' => 'Danh mục - Website Quản Lý Tour',
+    'pageTitle' => 'Booking',
+    'content' => $content,
+    'breadcrumb' => [
+        ['label' => 'Danh mục', 'url' => BASE_URL . 'home', 'active' => true],
+    ],
+]);
+?>

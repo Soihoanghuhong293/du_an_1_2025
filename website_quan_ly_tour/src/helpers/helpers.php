@@ -15,16 +15,32 @@ function block_path(string $block): string
 
 
 // Hiển thị view với dữ liệu truyền vào
-function view(string $view, array $data = []): void
+// File: commons/function.php (hoặc helper.php)
+
+function view($view, $data = [])
 {
-    $file = view_path($view);
+    $viewPath = './views/' . str_replace('.', '/', $view) . '.php';
 
-    if (!file_exists($file)) {
-        throw new RuntimeException("View '{$view}' not found at {$file}");
+    if (file_exists($viewPath)) {
+        // 1. Giải nén biến
+        extract($data);
+
+        // 2. Bắt đầu bộ nhớ đệm (Tạo môi trường để ob_get_clean ở View con hoạt động)
+        ob_start();
+
+        // 3. Nhúng file View
+        // (Lúc này file View sẽ chạy, và dòng ob_get_clean() của bạn sẽ hút hết nội dung trong này)
+        require $viewPath;
+
+        // 4. Đẩy dữ liệu ra màn hình
+        // Nếu file view con ĐÃ dùng ob_get_clean() thì buffer rỗng -> lệnh này không làm gì (đúng ý bạn).
+        // Nếu file view là Layout (được gọi đệ quy) -> lệnh này sẽ in toàn bộ web ra trình duyệt.
+        if (ob_get_level() > 0) {
+            ob_end_flush();
+        }
+    } else {
+        echo "Lỗi: Không tìm thấy view $viewPath";
     }
-
-    extract($data, EXTR_OVERWRITE); // Biến hóa mảng $data thành biến riêng lẻ
-    include $file;
 }
 
 // Hiển thị block layout với dữ liệu truyền vào

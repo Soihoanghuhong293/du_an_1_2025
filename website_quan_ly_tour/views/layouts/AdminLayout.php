@@ -51,7 +51,7 @@
         </div>
     </main>
 
-    <?php block('footer'); ?>
+    <?php block(block: 'footer'); ?>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.10.1/browser/overlayscrollbars.browser.es6.min.js"></script>

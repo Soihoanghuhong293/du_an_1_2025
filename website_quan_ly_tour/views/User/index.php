@@ -1,11 +1,18 @@
-<?php
-$pageTitle = 'Danh sách Người dùng';
-ob_start();
-?>
 
-<div class="container mt-4">
+<div class="row">
+  <div class="col-12">
+    <!-- Card Danh mục -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Danh sách tài khoản admin và hdv</h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+            <i class="bi bi-dash-lg"></i>
+          </button>
+        </div>
+      </div>
+<div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3><?= $pageTitle ?></h3>
         <a href="<?= BASE_URL ?>users/create" class="btn btn-primary">Thêm người dùng</a>
     </div>
 
@@ -52,5 +59,17 @@ ob_start();
 </div>
 
 <?php
+// Lấy toàn bộ nội dung vừa tạo
 $content = ob_get_clean();
-require __DIR__ . '/../../views/layouts/AdminLayout.php';
+
+// Hiển thị layout Admin
+view('layouts.AdminLayout', [
+    'title' => 'Danh mục - Website Quản Lý Tour',
+    'pageTitle' => 'Account',
+    'content' => $content,
+    'breadcrumb' => [
+        ['label' => 'Acount', 'url' => BASE_URL . 'home', 'active' => true],
+    ],
+]);
+?>
+
