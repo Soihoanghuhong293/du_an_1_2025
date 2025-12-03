@@ -1,5 +1,5 @@
 <?php
-// Sử dụng layout auth và truyền nội dung vào
+// Sử dụng layout auth và truyền nội dung vàob
 ob_start();
 ?>
 <!--begin::Login Content-->
@@ -12,7 +12,7 @@ ob_start();
                         <i class="bi bi-airplane-fill"></i>
                     </div>
                     <h2>
-                        <strong>Quản Lý Tour FPOLY</strong>
+                        <strong>Quản Lý Tour FPOLYyy</strong>
                     </h2>
                 </a>
                 <div class="mt-2 fw-light fst-italic" style="font-size: 1rem;">
@@ -86,7 +86,11 @@ ob_start();
                         <button type="submit" class="btn btn-login btn-lg">
                             <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
                         </button>
-                    </div>
+<p>Bạn chưa có tài khoản?
+    <a href="<?= BASE_URL ?>?act=register">Click vào đây để đăng ký</a>
+</p>
+
+         </div>
                 </form>
                 <div class="login-divider"></div>
                 <div class="text-center">

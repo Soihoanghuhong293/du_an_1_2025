@@ -1,39 +1,61 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Nạp cấu hình chung của ứng dụng
 $config = require __DIR__ . '/config/config.php';
 
-// Nạp các file chứa hàm trợ giúp
-require_once __DIR__ . '/src/helpers/helpers.php'; // Helper chứa các hàm trợ giúp (hàm xử lý view, block, asset, session, ...)
-require_once __DIR__ . '/src/helpers/database.php'; // Helper kết nối database(kết nối với cơ sở dữ liệu)
+// Helper
+require_once __DIR__ . '/src/helpers/helpers.php';
+require_once __DIR__ . '/src/helpers/database.php';
 
-// Nạp các file chứa model
+// Models
 require_once __DIR__ . '/src/models/User.php';
 
-// Nạp các file chứa controller
+// Controllers
 require_once __DIR__ . '/src/controllers/HomeController.php';
 require_once __DIR__ . '/src/controllers/AuthController.php';
+require_once __DIR__ . '/src/controllers/UserController.php';
 
-// Khởi tạo các controller
+// Khởi tạo controller
 $homeController = new HomeController();
 $authController = new AuthController();
+$userController = new UserController();
 
-// Xác định route dựa trên tham số act (mặc định là trang chủ '/')
+// Lấy tham số act (mặc định '/')
 $act = $_GET['act'] ?? '/';
 
-// Match đảm bảo chỉ một action tương ứng được gọi
+// Router
 match ($act) {
-    // Trang welcome (cho người chưa đăng nhập) - mặc định khi truy cập '/'
+
+    // Trang welcome (chưa đăng nhập)
     '/', 'welcome' => $homeController->welcome(),
 
-    // Trang home (cho người đã đăng nhập)
+    // Trang home (đã đăng nhập)
     'home' => $homeController->home(),
 
-    // Đường dẫn đăng nhập, đăng xuất
+    // ===============================
+    // ⭐ ROUTER ĐĂNG NHẬP / ĐĂNG KÝ
+    // ===============================
     'login' => $authController->login(),
+    'register' => $authController->register(),
     'check-login' => $authController->checkLogin(),
+    'handle-register' => $authController->handleRegister(),
     'logout' => $authController->logout(),
 
-    // Đường dẫn không tồn tại
+    // ===============================
+    // ⭐ ROUTER QUẢN LÝ NGƯỜI DÙNG
+    // ===============================
+    'users' => $userController->index(),                     // danh sách người dùng
+    'users/create' => $userController->create(),            // form tạo mới
+    'users/store' => $userController->store(),              // xử lý lưu mới
+    'users/edit' => $userController->edit(),                // form sửa
+    'users/update' => $userController->update(),            // xử lý update
+    'users/show' => $userController->detail(),             // xem chi tiết
+    'users/delete' => $userController->delete(),            // xóa người dùng
+
+    // 404
     default => $homeController->notFound(),
+    
 };

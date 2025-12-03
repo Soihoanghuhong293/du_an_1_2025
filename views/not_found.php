@@ -14,7 +14,7 @@ ob_start();
                     <strong>404 - Không tìm thấy</strong>
                 </h1>
                 <div class="subtitle">
-                    Rất tiếc, trang bạn đang tìm kiếm không tồn tại
+                    Rất tiếc, trang bạn đang tìm kiếm không tồn tại  sdfhh
                 </div>
             </a>
         </div>
