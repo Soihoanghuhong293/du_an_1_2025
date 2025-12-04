@@ -4,7 +4,7 @@
     <!-- Card Danh mục -->
     <div class="card">
       <div class="card-header">
-        <h3 class="card-title">Danh sách tour</h3>
+        <h3 class="card-title">Danh sách Tours</h3>
         <div class="card-tools">
           <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
             <i class="bi bi-dash-lg"></i>
@@ -119,18 +119,14 @@
         </tbody>
     </table>
 </div>
- </div>
-    <!-- /.card -->
-  </div>
-</div>
-<!-- /
+
 <?php
 // Lấy toàn bộ nội dung vừa tạo
 $content = ob_get_clean();
 
 // Hiển thị layout Admin
 view('layouts.AdminLayout', [
-    'title' => 'Tours - Website Quản Lý Tour',
+    'title' => 'tours - Website Quản Lý Tour',
     'pageTitle' => 'Tours',
     'content' => $content,
     'breadcrumb' => [
