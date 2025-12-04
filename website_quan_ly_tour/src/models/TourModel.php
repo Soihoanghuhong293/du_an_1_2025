@@ -12,14 +12,15 @@ class Tour {
         return is_array($arr) ? $arr : [];
     }
 
-    // Áp dụng safeJson cho từng cột JSON
+    // Map JSON fields theo đúng tên cột của bạn
     private function mapJsonFields($tour) {
         if (!$tour) return null;
 
-        $tour['lich_trinh']   = $this->safeJson($tour['lich_trinh'] ?? null);
-        $tour['hinh_anh']     = $this->safeJson($tour['hinh_anh'] ?? null);
-        $tour['chinh_sach']   = $this->safeJson($tour['chinh_sach'] ?? null);
-        $tour['nha_cung_cap'] = $this->safeJson($tour['nha_cung_cap'] ?? null);
+        $tour['schedule']   = $this->safeJson($tour['schedule'] ?? null);
+        $tour['images']     = $this->safeJson($tour['images'] ?? null);
+        $tour['prices']     = $this->safeJson($tour['prices'] ?? null);
+        $tour['policies']   = $this->safeJson($tour['policies'] ?? null);
+        $tour['suppliers']  = $this->safeJson($tour['suppliers'] ?? null);
 
         return $tour;
     }
@@ -35,8 +36,7 @@ class Tour {
             $stmt->execute();
 
             $rows = $stmt->fetchAll();
-            
-            // Decode JSON cho từng bản ghi
+
             foreach ($rows as &$tour) {
                 $tour = $this->mapJsonFields($tour);
             }
@@ -52,11 +52,9 @@ class Tour {
     // Lấy tour theo ID
     public function getById($id) {
         $pdo = getDB();
-        if (!$pdo) return null;
 
         try {
-            $sql = "SELECT * FROM tours WHERE id = :id";
-            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo->prepare("SELECT * FROM tours WHERE id = :id");
             $stmt->execute(['id' => $id]);
 
             $tour = $stmt->fetch();
@@ -68,58 +66,58 @@ class Tour {
         }
     }
 
-    // Tạo tour mới
+    // Tạo tour mới (đã chuẩn hóa)
     public function create($data)
-{
-    $pdo = getDB();
-    if (!$pdo) return false;
+    {
+        $pdo = getDB();
 
-    try {
-        $sql = "INSERT INTO tours 
-            (name, description, category_id, price, lich_trinh, hinh_anh, chinh_sach, nha_cung_cap, status, created_at, updated_at)
-            VALUES 
-            (:name, :description, :category_id, :price, :lich_trinh, :hinh_anh, :chinh_sach, :nha_cung_cap, 1, NOW(), NOW())";
+        try {
+            $sql = "INSERT INTO tours 
+                (name, description, category_id, price, schedule, images, prices, policies, suppliers, status, created_at, updated_at)
+                VALUES 
+                (:name, :description, :category_id, :price, :schedule, :images, :prices, :policies, :suppliers, 1, NOW(), NOW())";
 
-        $stmt = $pdo->prepare($sql);
+            $stmt = $pdo->prepare($sql);
 
-        return $stmt->execute([
-            ':name'         => $data['ten_tour'],
-            ':description'  => $data['mo_ta'],
-            ':category_id'  => $data['category_id'],
-            ':price'        => $data['gia'],
+            return $stmt->execute([
+                ':name'         => $data['ten_tour'],
+                ':description'  => $data['mo_ta'],
+                ':category_id'  => $data['category_id'],
+                ':price'        => $data['gia'],
 
-            // JSON mặc định nếu không nhập
-            ':lich_trinh'   => json_encode(['days' => []]),
-            ':hinh_anh'     => json_encode([]),
-            ':chinh_sach'   => json_encode(['booking' => '']),
-            ':nha_cung_cap' => json_encode([]),
-        ]);
+                // JSON TRÙNG VỚI BẢNG
+                ':schedule'     => json_encode([]),
+                ':images'       => json_encode([]),
+                ':prices'       => json_encode([]),
+                ':policies'     => json_encode([]),
+                ':suppliers'    => json_encode([])
+            ]);
 
-    } catch (PDOException $e) {
-        error_log("Lỗi create(): " . $e->getMessage());
-        return false;
+        } catch (PDOException $e) {
+            error_log("Lỗi create(): " . $e->getMessage());
+            return false;
+        }
     }
-}
-
 
     // Update tour
     public function update($id, $data) {
         $pdo = getDB();
-        if (!$pdo) return false;
 
         try {
             $sql = "UPDATE tours SET
-                        ten_tour = :ten_tour,
-                        mo_ta = :mo_ta,
-                        gia = :gia,
-                        ngay_khoi_hanh = :ngay_khoi_hanh,
-                        diem_den = :diem_den
+                        name = :name,
+                        description = :description,
+                        price = :price,
+                        updated_at = NOW()
                     WHERE id = :id";
 
-            $data['id'] = $id;
-
             $stmt = $pdo->prepare($sql);
-            return $stmt->execute($data);
+            return $stmt->execute([
+                ':id'          => $id,
+                ':name'        => $data['ten_tour'],
+                ':description' => $data['mo_ta'],
+                ':price'       => $data['gia']
+            ]);
 
         } catch (PDOException $e) {
             error_log("Lỗi update(): " . $e->getMessage());
@@ -130,11 +128,9 @@ class Tour {
     // Xóa tour
     public function delete($id) {
         $pdo = getDB();
-        if (!$pdo) return false;
 
         try {
-            $sql = "DELETE FROM tours WHERE id = :id";
-            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo->prepare("DELETE FROM tours WHERE id = :id");
             return $stmt->execute(['id' => $id]);
         } catch (PDOException $e) {
             error_log("Lỗi delete(): " . $e->getMessage());
