@@ -44,6 +44,7 @@ ob_start();
                     <a href="index.php?act=category-delete&id=<?= $item['id'] ?>"
                        onclick="return confirm('Bạn muốn xóa thật không?')"
                        class="btn btn-danger btn-sm">Xóa</a>
+                      
                   </td>
                 </tr>
               <?php endforeach; ?>

@@ -72,4 +72,39 @@ class Booking
         $stmt = $conn->query("SELECT id, name FROM tour_statuses");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public static function find($id)
+    {
+        $conn = getDB();
+        $stmt = $conn->prepare("SELECT * FROM bookings WHERE id = :id");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    public static function delete($id)
+    {
+        $conn = getDB();
+        try {
+            // Bắt đầu transaction
+            $conn->beginTransaction();
+
+            //  Xóa các log trạng thái liên quan đến booking này trước
+            //  bảng booking_status_logs có khóa ngoại trỏ về bookings)
+            $stmtLog = $conn->prepare("DELETE FROM booking_status_logs WHERE booking_id = :id");
+            $stmtLog->bindParam(':id', $id);
+            $stmtLog->execute();
+
+            //  Xóa booking chính
+            $stmtBooking = $conn->prepare("DELETE FROM bookings WHERE id = :id");
+            $stmtBooking->bindParam(':id', $id);
+            $stmtBooking->execute();
+
+            
+            $conn->commit();
+            return true;
+        } catch (Exception $e) {
+           
+            $conn->rollBack();
+            return false;
+        }
+    }
 }

@@ -27,6 +27,7 @@
                 <th>Notes</th>
                 <th>Created At</th>
                 <th>Updated At</th>
+                <th>action</th>
             </tr>
         </thead>
 
@@ -71,6 +72,18 @@
 
                         <td><?= !empty($bk['created_at']) ? date('d/m/Y H:i', strtotime($bk['created_at'])) : '-' ?></td>
                         <td><?= !empty($bk['updated_at']) ? date('d/m/Y H:i', strtotime($bk['updated_at'])) : '-' ?></td>
+                        <td>
+                           <a href="<?= BASE_URL . 'booking/show/' . $bk['id'] ?>" 
+                               class="btn btn-info btn-sm">
+                             <i class="bi bi-eye"></i> Chi tiết
+                              </a>
+
+                              <a href="index.php?act=booking-delete&id=<?= $bk['id'] ?>" 
+                                onclick="return confirm('Bạn chắc chắn muốn xóa?')" 
+                                class="btn btn-danger btn-sm">
+                                 Xóa
+                             </a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>

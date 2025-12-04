@@ -60,4 +60,28 @@ class BookingController
             }
         }
     }
+    // ... Các hàm index, create, store giữ nguyên
+
+    // 3. Xử lý xóa
+    public function delete($id)
+    {
+        // Kiểm tra xem ID có tồn tại không
+        $booking = Booking::find($id);
+
+        if (!$booking) {
+            // Có thể set session flash message lỗi ở đây
+            echo "Booking không tồn tại!";
+            return;
+        }
+
+        // Thực hiện xóa
+        if (Booking::delete($id)) {
+            // Xóa thành công, quay về trang danh sách
+            header("Location: " . BASE_URL . "bookings"); 
+            // Lưu ý: Đảm bảo đường dẫn header location đúng với router của bạn
+            exit;
+        } else {
+            echo "Xóa thất bại! Có lỗi hệ thống.";
+        }
+    }
 }
