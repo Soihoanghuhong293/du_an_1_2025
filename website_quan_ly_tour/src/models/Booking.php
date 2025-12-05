@@ -107,4 +107,51 @@ class Booking
             return false;
         }
     }
+    // ... (Các hàm cũ giữ nguyên)
+
+    // 7. Lấy chi tiết Booking (Kèm tên Tour, tên HDV, tên người tạo)
+   public static function getDetail($id)
+    {
+        $conn = getDB();
+        $sql = "SELECT 
+                    b.*, 
+                    t.name AS tour_name,
+                    t.price AS tour_price,
+                    u_creator.name AS creator_name,
+                    u_guide.name AS guide_name,
+                    -- u_guide.phone AS guide_phone,  <-- XÓA HOẶC COMMENT DÒNG NÀY
+                    ts.name AS status_name
+                FROM bookings b
+                LEFT JOIN tours t ON b.tour_id = t.id
+                LEFT JOIN users u_creator ON b.created_by = u_creator.id
+                LEFT JOIN users u_guide ON b.assigned_guide_id = u_guide.id
+                LEFT JOIN tour_statuses ts ON b.status = ts.id
+                WHERE b.id = :id";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    // 8. Lấy lịch sử thay đổi trạng thái (Booking Logs)
+    public static function getLogs($booking_id)
+    {
+        $conn = getDB();
+        $sql = "SELECT 
+                    log.*, 
+                    u.name AS changer_name,
+                    ts_old.name AS old_status_name,
+                    ts_new.name AS new_status_name
+                FROM booking_status_logs log
+                LEFT JOIN users u ON log.changed_by = u.id
+                LEFT JOIN tour_statuses ts_old ON log.old_status = ts_old.id
+                LEFT JOIN tour_statuses ts_new ON log.new_status = ts_new.id
+                WHERE log.booking_id = :id
+                ORDER BY log.changed_at DESC";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':id', $booking_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }   
 }

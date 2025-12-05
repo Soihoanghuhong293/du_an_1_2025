@@ -1,5 +1,5 @@
 <?php
-
+require_once BASE_PATH . '/src/models/BookingGuest.php'; // <--- Thêm dòng này
 require_once BASE_PATH . '/src/models/Booking.php';
 
 class BookingController
@@ -82,6 +82,80 @@ class BookingController
             exit;
         } else {
             echo "Xóa thất bại! Có lỗi hệ thống.";
+        }
+    }
+    // ...
+
+    // 4. Hiển thị chi tiết (Show)
+    public function show($id)
+    {
+        if (!$id) { header("Location: index.php?act=bookings"); exit; }
+
+        $booking = Booking::getDetail($id);
+        $logs = Booking::getLogs($id);
+        
+        // 👇 Lấy danh sách khách hàng từ bảng mới
+        $guests = BookingGuest::getByBookingId($id);
+
+        if (!$booking) { echo "Booking không tồn tại!"; return; }
+
+        $title = "Chi tiết Booking #" . $booking['id'];
+        
+        ob_start();
+        require_once './views/bookings/show.php';
+        $content = ob_get_clean();
+        require_once './views/layouts/AdminLayout.php';
+    }
+
+    // --- CÁC HÀM MỚI ---
+
+    // 1. Xử lý thêm khách
+    public function addGuest()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $booking_id = $_POST['booking_id'];
+            $data = [
+                ':booking_id' => $booking_id,
+                ':full_name'  => $_POST['full_name'],
+                ':gender'     => $_POST['gender'],
+                ':birthdate'  => !empty($_POST['birthdate']) ? $_POST['birthdate'] : null,
+                ':phone'      => $_POST['phone'],
+                ':note'       => $_POST['note'],
+                ':room_name'  => 'Chưa xếp' // Mặc định
+            ];
+
+            BookingGuest::add($data);
+            header("Location: index.php?act=booking-show&id=" . $booking_id);
+            exit;
+        }
+    }
+
+    // 2. Xử lý xóa khách
+    public function deleteGuest()
+    {
+        $guest_id = $_GET['guest_id'] ?? null;
+        $booking_id = $_GET['booking_id'] ?? null;
+
+        if ($guest_id && $booking_id) {
+            BookingGuest::delete($guest_id);
+            header("Location: index.php?act=booking-show&id=" . $booking_id);
+            exit;
+        }
+    }
+
+    // 3. Xử lý lưu phân phòng (Cập nhật hàng loạt)
+    public function updateRooms()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $booking_id = $_POST['booking_id'];
+            $rooms = $_POST['rooms'] ?? []; // Mảng: [guest_id => room_name]
+
+            foreach ($rooms as $guest_id => $room_name) {
+                BookingGuest::updateRoom($guest_id, $room_name);
+            }
+
+            header("Location: index.php?act=booking-show&id=" . $booking_id);
+            exit;
         }
     }
 }

@@ -65,8 +65,11 @@ match ($act) {
     // 2. Xử lý lưu dữ liệu (khi bấm nút Submit)
     'booking-store'  => $bookingController->store(),
     'booking-delete' => $bookingController->delete($_GET['id'] ?? null),
+    'booking-show'   => $bookingController->show($_GET['id'] ?? null),
 
-
+'guest-add'      => $bookingController->addGuest(),
+    'guest-delete'   => $bookingController->deleteGuest(),
+    'guest-update-rooms' => $bookingController->updateRooms(),
 
 
  'users' => $userController->index(),
