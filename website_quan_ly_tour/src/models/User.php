@@ -1,6 +1,5 @@
 <?php
-//hug giygiy
-// Model User đại diện cho thực thể người dùng trong hệ thống
+
 class User
 {
     public $id;
@@ -17,7 +16,7 @@ class User
             $this->name = $data['name'] ?? '';
             $this->email = $data['email'] ?? '';
             $this->password = $data['password'] ?? '';
-            $this->role = $data['role'] ?? 'user'; // admin | guide | user
+            $this->role = $data['role'] ?? 'user';
             $this->status = $data['status'] ?? 1;
         }
     }
@@ -50,6 +49,27 @@ class User
         return $data ? new self($data) : null;
     }
 
+    /* ⭐ BỔ SUNG HÀM find() DÙNG CHO TOGGLE STATUS ⭐ */
+    public static function find($id)
+    {
+        return self::findById($id);
+    }
+
+    /* ⭐ BỔ SUNG HÀM UPDATE STATUS ⭐ */
+    public static function updateStatus($id, $status)
+    {
+        $pdo = getDB();
+        $stmt = $pdo->prepare("
+            UPDATE users 
+            SET status = :status 
+            WHERE id = :id
+        ");
+        return $stmt->execute([
+            'status' => $status,
+            'id' => $id
+        ]);
+    }
+
     public static function all()
     {
         $pdo = getDB();
@@ -70,7 +90,7 @@ class User
             VALUES (:name, :email, :password, :role, :status)
         ");
         return $stmt->execute([
-            'name' => $data['name'], // bắt buộc phải có key 'name'
+            'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
             'role' => $data['role'] ?? 'user',
@@ -83,11 +103,11 @@ class User
         $pdo = getDB();
         $sql = "UPDATE users SET name=:name, email=:email, role=:role, status=:status";
         $params = [
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'role' => $data['role'],
-            'status' => $data['status'],
-            'id' => $this->id
+            'name'     => $data['name'],
+            'email'    => $data['email'],
+            'role'     => $data['role'],
+            'status'   => $data['status'],
+            'id'       => $this->id
         ];
 
         if (!empty($data['password'])) {
@@ -103,7 +123,7 @@ class User
     public function delete()
     {
         $pdo = getDB();
-        $stmt = $pdo->prepare(query: "DELETE FROM users WHERE id=:id");
+        $stmt = $pdo->prepare("DELETE FROM users WHERE id=:id");
         return $stmt->execute(['id' => $this->id]);
     }
 }
