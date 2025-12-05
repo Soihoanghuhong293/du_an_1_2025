@@ -137,3 +137,21 @@ function requireGuideOrAdmin(): void
         exit;
     }
 }
+function url(string $act = '', array $params = []): string
+{
+    // BASE_URL luôn kết thúc bằng /
+    $base = rtrim(BASE_URL, '/') . '/?act=' . $act;
+
+    if (!empty($params)) {
+        $base .= '&' . http_build_query($params);
+    }
+
+    return $base;
+}
+function redirect(string $act, array $params = []): void
+{
+    $url = url($act, $params);
+    header("Location: " . $url);
+    exit;
+}
+
