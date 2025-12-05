@@ -43,6 +43,11 @@ $guideController = new GuideController();  // ⭐ THÊM MỚI
 $act = $_GET['act'] ?? '/';
 
 // Router
+if ($act === 'users/toggleStatus') {
+    (new UserController())->toggleStatus();
+    exit;
+}
+
 // Router
 match ($act) {
 
@@ -67,6 +72,7 @@ match ($act) {
     'bookings'       => $bookingController->index(),
     'booking-create' => $bookingController->create(),
     'booking-store'  => $bookingController->store(),
+    'booking-delete' => $bookingController->delete($_GET['id'] ?? null),
 
     // ===============================
     // ⭐ USER MANAGEMENT

@@ -111,34 +111,31 @@
         </li>
         <?php endif; ?>
 
-      <!-- Hướng dẫn viên -->
-      <?php if (isGuide()): ?>
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <i class="nav-icon bi bi-person-vcard"></i>
-          <p>Hướng dẫn viên<i class="nav-arrow bi bi-chevron-right"></i></p>
-        </a>
+        <!-- Hướng dẫn viên -->
+        <?php if (isGuide()): ?>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-person-vcard"></i>
+            <p>Hướng dẫn viên<i class="nav-arrow bi bi-chevron-right"></i></p>
+          </a>
 
-        <ul class="nav nav-treeview">
+          <ul class="nav nav-treeview">
 
-            <!-- ⭐ Chức năng 1: Tour được phân công -->
             <li class="nav-item">
               <a href="<?= url('guide-tours') ?>" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i><p>Tour được phân công</p>
               </a>
             </li>
 
-            <!-- ⭐ Chức năng 4: Lịch làm việc -->
             <li class="nav-item">
               <a href="<?= url('guide-schedule') ?>" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i><p>Lịch làm việc</p>
               </a>
             </li>
-        </ul>
 
-      </li>
-      <?php endif; ?>
-
+          </ul>
+        </li>
+        <?php endif; ?>
 
         <!-- Hệ thống -->
         <li class="nav-header">HỆ THỐNG</li>

@@ -56,6 +56,7 @@
                                     <textarea class="form-control" id="mo_ta" name="mo_ta" rows="5"><?php echo htmlspecialchars($tour['mo_ta'] ?? ''); ?></textarea>
                                 </div>
                                 
+                                
                             </div>
                             <div class="card-footer d-flex justify-content-end gap-2">
                                 <button type="submit" class="btn btn-warning">
