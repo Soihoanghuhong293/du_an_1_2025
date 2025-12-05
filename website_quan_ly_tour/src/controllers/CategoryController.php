@@ -2,23 +2,79 @@
 
 class CategoryController
 {
-    public function index()
-     {
-        // Nạp model
-        require_once __DIR__ . '/../models/Category.php';
+    public function index(): void
+{
+    // 1. Nạp model (giữ nguyên)
+    require_once __DIR__ . '/../models/Category.php';
 
-        // Lấy dữ liệu từ model
-        $categories = Category::all();
+    $categories = Category::all();
 
-        // Tạo biến tiêu đề
-        $title = "Quản lý Danh mục";
-
-        // Nhúng view con vào layout admin
-        ob_start();
-        require_once __DIR__ . '/../../views/categories/index.php'; // view con
-        $content = ob_get_clean();
-
-        // Gọi layout admin
-        require_once __DIR__ . '/../../views/layouts/AdminLayout.php';
+   
+    view('categories.index', [
+        'categories' => $categories,
+        'title'      => 'Quản lý Danh mục'
+    ]);
+}
+    public function delete($id=null)
+    {
+        if($id){
+            require_once __DIR__ .'/../models/Category.php';
+            Category::deleteById($id);
+        }
+         header("Location: index.php?act=categories");
+         exit;
     }
+     public function add()
+     {
+        require_once __DIR__ .'/../models/Category.php';
+        if($_SERVER['REQUEST_METHOD']==='POST'){
+
+            $name = $_POST['name'] ?? '';
+            $description = $_POST['description'] ?? '';
+            $status = $_POST['status'] ?? 1;
+
+
+                Category:: create($name,$description,$status);
+                 header("Location: index.php?act=categories");
+                 exit;
+          }
+          $title ="them danh muc";
+          ob_start();
+    require __DIR__ . '/../../views/categories/form.php';
+    $content = ob_get_clean();
+
+    require __DIR__ . '/../../views/layouts/AdminLayout.php';
+
+     }
+
+     public function edit($id){
+        require_once __DIR__ .'/../models/Category.php';
+        $category = Category::find($id);
+
+        if(!$category){
+            echo" danh mục không tồn tại";
+            exit;
+
+        }
+        if($_SERVER['REQUEST_METHOD']==='POST'){
+
+            $name = $_POST['name'] ?? '';
+            $description = $_POST['description'] ?? '';
+
+            $status= $_POST['status'] ?? 1;
+
+             Category::updateById($id, $name, $description, $status);
+             header("Location: index.php?act=categories");
+        exit;
+
+        }
+         $title = "Sửa danh mục";
+
+    ob_start();
+    require __DIR__ . '/../../views/categories/form.php';
+    $content = ob_get_clean();
+
+    require __DIR__ . '/../../views/layouts/AdminLayout.php';
+     }
+
 }

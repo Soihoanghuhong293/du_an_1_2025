@@ -1,5 +1,17 @@
-<div class="table-responsive">
-    <h3 style="margin-bottom: 15px;">Danh Sách Tour Hiện Tại</h3>
+
+<div class="row">
+  <div class="col-12">
+    <!-- Card Danh mục -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Danh sách Tours</h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+            <i class="bi bi-dash-lg"></i>
+          </button>
+        </div>
+      </div>
+<div class="card-body">
 
     <table class="table table-bordered table-hover align-middle">
         <thead class="table-light">
@@ -107,3 +119,18 @@
         </tbody>
     </table>
 </div>
+
+<?php
+// Lấy toàn bộ nội dung vừa tạo
+$content = ob_get_clean();
+
+// Hiển thị layout Admin
+view('layouts.AdminLayout', [
+    'title' => 'tour - Website Quản Lý Tour',
+    'pageTitle' => 'Tour',
+    'content' => $content,
+    'breadcrumb' => [
+        ['label' => 'Danh mục', 'url' => BASE_URL . 'home', 'active' => true],
+    ],
+]);
+?>
