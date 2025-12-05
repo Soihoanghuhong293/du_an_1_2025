@@ -93,14 +93,25 @@
                 <td><?= $tour['created_at'] ?></td>
                 <td><?= $tour['updated_at'] ?></td>
 
+                <!-- THAO TÁC -->
                 <td>
-                    <a href="<?= BASE_URL . 'tour-edit&id=' . $tour['id'] ?>" class="btn btn-warning btn-sm">Sửa</a>
-                    <a href="<?= BASE_URL . 'tour-delete&id=' . $tour['id'] ?>" 
+                    <a href="index.php?controller=tour&action=edit&id=<?= $tour['id'] ?>" 
+                       class="btn btn-warning btn-sm">
+                        Sửa
+                    </a>
+
+                    <a href="index.php?controller=tour&action=detail&id=<?= $tour['id'] ?>" 
+                       class="btn btn-info btn-sm">
+                        Xem chi tiết
+                    </a>
+
+                    <a href="index.php?controller=tour&action=delete&id=<?= $tour['id'] ?>" 
                        onclick="return confirm('Bạn có chắc muốn xóa?')" 
                        class="btn btn-danger btn-sm">
                         Xóa
                     </a>
                 </td>
+
             </tr>
 
         <?php endforeach; ?>

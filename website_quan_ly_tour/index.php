@@ -10,7 +10,6 @@ if (session_status() === PHP_SESSION_NONE) {
 //index.php
 define('BASE_PATH', __DIR__);
 
-
 // Nạp cấu hình chung của ứng dụng
 $config = require __DIR__ . '/config/config.php';
 
@@ -35,78 +34,54 @@ $homeController = new HomeController();
 $authController = new AuthController();
 $tourController = new TourController();
 $bookingController = new BookingController();
-$categoryController = new CategoryController();// Lấy tham số act (mặc định '/')
+$categoryController = new CategoryController();
 $userController = new UserController();
 
 // Lấy tham số act (mặc định '/')
 $act = $_GET['act'] ?? '/';
 
-// Router
+// ===============================
+// ⭐ ROUTER CHÍNH DUY NHẤT
+// ===============================
 match ($act) {
 
-    // Trang welcome (chưa đăng nhập)
     '/', 'welcome' => $homeController->welcome(),
 
-    // Trang home (đã đăng nhập)
     'home' => $homeController->home(),
 
-    // ===============================
-    // ⭐ ROUTER ĐĂNG NHẬP / ĐĂNG KÝ
-    // ===============================
+    // Auth
     'login' => $authController->login(),
     'register' => $authController->register(),
     'check-login' => $authController->checkLogin(),
     'handle-register' => $authController->handleRegister(),
     'logout' => $authController->logout(),
-    // Trang danh sách booking
-'bookings' => $bookingController->index(),
-'booking-create' => $bookingController->create(),
 
-    // 2. Xử lý lưu dữ liệu (khi bấm nút Submit)
+    // Booking
+    'bookings' => $bookingController->index(),
+    'booking-create' => $bookingController->create(),
     'booking-store'  => $bookingController->store(),
 
-
-
-
- 'users' => $userController->index(),
-
- 'categories' => $categoryController->index(),
-  'category-delete' => $categoryController->delete($_GET['id'] ?? null),
-
-
-  
-
-
-    // ===============================
-    // ⭐ ROUTER QUẢN LÝ TOUR (BỔ SUNG)
-    // ===============================
-
-    // 1. Hiển thị danh sách tour
-    'tours' => $tourController->index(), 
-
-    // 2. Form thêm tour & xử lý thêm tour
-    'tour-add' => $tourController->add(), 
-
-    // 3. Form sửa tour & xử lý sửa tour. Lấy id từ URL: ?act=tour-edit&id=123
-    'tour-edit' => $tourController->edit($_GET['id'] ?? null), 
-
-    // 4. Xử lý xóa tour. Lấy id từ URL: ?act=tour-delete&id=123
-    'tour-delete' => $tourController->delete($_GET['id'] ?? null),
+    // Category
+    'categories' => $categoryController->index(),
     'category-add' => $categoryController->add(),
     'category-edit' => $categoryController->edit($_GET['id'] ?? null),
+    'category-delete' => $categoryController->delete($_GET['id'] ?? null),
 
-    
-    // ===============================
-    // ⭐ ROUTER QUẢN LÝ NGƯỜI DÙNG
-    // ===============================
-    'user' => $userController->index(),                     // danh sách người dùng
-    'users/create' => $userController->create(),            // form tạo mới
-    'users/store' => $userController->store(),              // xử lý lưu mới
-    'users/edit' => $userController->edit(),                // form sửa
-    'users/update' => $userController->update(),            // xử lý update
-    'users/show' => $userController->detail(),             // xem chi tiết
-    'users/delete' => $userController->delete(),            // xóa người dùng
+    // ⭐ TOUR
+    'tours' => $tourController->index(),
+    'tour-add' => $tourController->add(),
+    'tour-edit' => $tourController->edit($_GET['id'] ?? null),
+    'tour-delete' => $tourController->delete($_GET['id'] ?? null),
+    'tour-detail' => $tourController->detail(),
 
-    // 404
+    // User
+    'user' => $userController->index(),
+    'users/create' => $userController->create(),
+    'users/store' => $userController->store(),
+    'users/edit' => $userController->edit(),
+    'users/update' => $userController->update(),
+    'users/show' => $userController->detail(),
+    'users/delete' => $userController->delete(),
+
     default => $homeController->notFound(),
 };

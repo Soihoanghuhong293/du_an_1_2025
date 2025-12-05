@@ -137,4 +137,20 @@ class Tour {
             return false;
         }
     }
+   public function detail()
+{
+    $id = $_GET['id'] ?? null;
+
+    $tour = $this->getById($id);
+
+    if (!$tour) {
+        echo "Không tìm thấy tour!";
+        return;
+    }
+
+    require_once BASE_PATH . '/src/views/tour/detail.php';
+}
+
+
+
 }
