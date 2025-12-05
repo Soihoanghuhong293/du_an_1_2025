@@ -41,11 +41,27 @@
                         </span>
                     </td>
                     <td>
-                        <a href="<?= BASE_URL ?>users/show?id=<?= $u->id ?>" class="btn btn-sm btn-info">Xem</a>
-                        <a href="<?= BASE_URL ?>users/edit?id=<?= $u->id ?>" class="btn btn-sm btn-warning">Sửa</a>
-                        <a href="<?= BASE_URL ?>users/delete?id=<?= $u->id ?>" 
-                           onclick="return confirm('Xác nhận xóa?')" class="btn btn-sm btn-danger">Xóa</a>
-                    </td>
+                    <a href="<?= BASE_URL ?>users/show?id=<?= $u->id ?>" class="btn btn-sm btn-info">Xem</a>
+                    <a href="<?= BASE_URL ?>users/edit?id=<?= $u->id ?>" class="btn btn-sm btn-warning">Sửa</a>
+
+                    <?php if ($u->status == 1): ?>
+                        <a href="<?= BASE_URL ?>users/toggleStatus?id=<?= $u->id ?>"
+                        onclick="return confirm('Bạn có chắc muốn KHÓA tài khoản này?')"
+                        class="btn btn-sm btn-secondary">
+                        Khóa
+                        </a>
+                    <?php else: ?>
+                        <a href="<?= BASE_URL ?>users/toggleStatus?id=<?= $u->id ?>"
+                        onclick="return confirm('Bạn muốn MỞ KHÓA tài khoản này?')"
+                        class="btn btn-sm btn-success">
+                        Mở khóa
+                        </a>
+                    <?php endif; ?>
+
+                    <a href="<?= BASE_URL ?>users/delete?id=<?= $u->id ?>" 
+                    onclick="return confirm('Xác nhận xóa?')" 
+                    class="btn btn-sm btn-danger">Xóa</a>
+                  </td>
                 </tr>
                 <?php endforeach; ?>
                 <?php if(empty($users)): ?>
