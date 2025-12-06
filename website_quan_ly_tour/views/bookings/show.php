@@ -23,37 +23,102 @@
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header bg-info text-white">
-                <h5 class="card-title mb-0"><i class="bi bi-people"></i> Điều hành & Dịch vụ</h5>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-white p-0">
+                <ul class="nav nav-tabs card-header-tabs m-0" id="bookingTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active py-3 text-dark fw-bold" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule" type="button" role="tab">
+                            <i class="bi bi-map"></i> Lịch trình
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-3 text-dark fw-bold" id="service-tab" data-bs-toggle="tab" data-bs-target="#service" type="button" role="tab">
+                            <i class="bi bi-bus-front"></i> Dịch vụ
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-3 text-dark fw-bold" id="diary-tab" data-bs-toggle="tab" data-bs-target="#diary" type="button" role="tab">
+                            <i class="bi bi-journal-text"></i> Nhật ký
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-3 text-dark fw-bold" id="files-tab" data-bs-toggle="tab" data-bs-target="#files" type="button" role="tab">
+                            <i class="bi bi-paperclip"></i> Files
+                        </button>
+                    </li>
+                </ul>
             </div>
-            <div class="card-body">
-                <div class="mb-3">
-    <strong><i class="bi bi-person-badge"></i> Hướng dẫn viên:</strong>
-    <?php if (!empty($booking['guide_name'])): ?>
-        <span class="text-success fw-bold"><?= htmlspecialchars($booking['guide_name']) ?></span>
-        <?php else: ?>
-        <span class="text-danger">Chưa phân công</span>
-    <?php endif; ?>
-</div>
-                
-                <hr>
-                
-                <h6>Chi tiết dịch vụ (Xe, Khách sạn...):</h6>
-                <?php 
-                    $services = json_decode($booking['service_detail'], true);
-                    if (!empty($services)): 
-                ?>
-                    <ul>
-                    <?php foreach ($services as $key => $val): ?>
-                        <li><strong><?= ucfirst($key) ?>:</strong> <?= htmlspecialchars(is_array($val) ? json_encode($val) : $val) ?></li>
-                    <?php endforeach; ?>
-                    </ul>
-                <?php else: ?>
-                    <p class="text-muted fst-italic">Chưa có thông tin dịch vụ.</p>
-                <?php endif; ?>
+            
+            <div class="card-body bg-light">
+                <div class="tab-content" id="bookingTabsContent">
+                    
+                    <div class="tab-pane fade show active" id="schedule" role="tabpanel">
+                        <h6 class="text-primary border-bottom pb-2">Chi tiết lịch trình (Schedule Detail)</h6>
+                        <div class="bg-white p-3 border rounded">
+                            <?php 
+                                $schedule = json_decode($booking['schedule_detail'], true);
+                                if (json_last_error() === JSON_ERROR_NONE && is_array($schedule)): 
+                            ?>
+                                <ul class="list-group list-group-flush">
+                                    <?php foreach ($schedule as $key => $val): ?>
+                                        <li class="list-group-item"><strong><?= ucfirst($key) ?>:</strong> <?= htmlspecialchars(is_array($val) ? json_encode($val) : $val) ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php else: ?>
+                                <?= nl2br(htmlspecialchars($booking['schedule_detail'] ?? 'Chưa cập nhật lịch trình.')) ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="service" role="tabpanel">
+                         <h6 class="text-success border-bottom pb-2">Chi tiết dịch vụ (Service Detail)</h6>
+                         <div class="bg-white p-3 border rounded">
+                            <?php 
+                                $services = json_decode($booking['service_detail'], true);
+                                if (json_last_error() === JSON_ERROR_NONE && is_array($services)): 
+                            ?>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered mb-0">
+                                        <?php foreach ($services as $key => $val): ?>
+                                            <tr>
+                                                <th width="30%" class="bg-light"><?= ucfirst($key) ?></th>
+                                                <td><?= htmlspecialchars(is_array($val) ? json_encode($val) : $val) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </table>
+                                </div>
+                            <?php else: ?>
+                                <?= nl2br(htmlspecialchars($booking['service_detail'] ?? 'Chưa cập nhật dịch vụ.')) ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="diary" role="tabpanel">
+                        <h6 class="text-warning border-bottom pb-2 text-dark">Nhật ký Tour (Diary)</h6>
+                        <div class="bg-white p-3 border rounded" style="min-height: 150px;">
+                             <?= nl2br(htmlspecialchars($booking['diary'] ?? 'Chưa có nhật ký.')) ?>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="files" role="tabpanel">
+                        <h6 class="text-info border-bottom pb-2 text-dark">Danh sách tệp đính kèm</h6>
+                        <div class="bg-white p-3 border rounded">
+                             <?php if (!empty($booking['lists_file'])): ?>
+                                <div class="alert alert-secondary">
+                                    <i class="bi bi-file-earmark"></i> 
+                                    <?= nl2br(htmlspecialchars($booking['lists_file'])) ?>
+                                </div>
+                             <?php else: ?>
+                                <p class="text-muted fst-italic">Không có tệp đính kèm nào.</p>
+                             <?php endif; ?>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
+
+       
 
         <div class="card mb-3">
             <div class="card-header bg-secondary text-white">
