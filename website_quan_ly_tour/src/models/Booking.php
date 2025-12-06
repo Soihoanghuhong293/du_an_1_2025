@@ -239,4 +239,45 @@ public static function create($data)
             ':id' => $bookingId
         ]);
     }
+  public static function updateStatus($bookingId, $newStatus, $userId, $note = null)
+{
+    $db = getDB();
+
+    // lấy tus cũ
+    $stmt = $db->prepare("SELECT status FROM bookings WHERE id = ?");
+    $stmt->execute([$bookingId]);
+    $oldStatus = $stmt->fetchColumn();
+
+    if ($oldStatus === false) {
+        return false; 
+    }
+
+    // cập nhật tus mới
+    $stmt = $db->prepare("
+        UPDATE bookings 
+        SET status = :status 
+        WHERE id = :id
+    ");
+
+    $stmt->execute([
+        ':status' => $newStatus,
+        ':id'     => $bookingId
+    ]);
+
+    // lưu log
+    $stmt = $db->prepare("
+        INSERT INTO booking_status_logs (booking_id, old_status, new_status, changed_by, note)
+        VALUES (:booking_id, :old_status, :new_status, :changed_by, :note)
+    ");
+
+    return $stmt->execute([
+        ':booking_id' => $bookingId,
+        ':old_status' => $oldStatus,
+        ':new_status' => $newStatus,
+        ':changed_by' => $userId,
+        ':note'       => $note
+    ]);
+}
+
+
 }

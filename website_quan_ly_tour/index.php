@@ -131,6 +131,10 @@ match ($act) {
     // ⭐ Tải file phân công
     'guide-download'     => $guideController->downloadAssignment(),
 
+    'guide-confirm' => $guideController->confirm(),
+'guide-reject'  => $guideController->reject(),
+
+
     // ===============================
     // ⭐ 404
     // ===============================

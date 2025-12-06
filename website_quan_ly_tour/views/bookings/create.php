@@ -24,16 +24,7 @@
               </select>
             </div>
 
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Trạng thái</label>
-              <select name="status" class="form-control">
-                <?php foreach ($statuses as $st): ?>
-                  <option value="<?= $st['id'] ?>" <?= $st['id'] == 1 ? 'selected' : '' ?>>
-                    <?= $st['name'] ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
+            
           </div>
 
           <div class="row">

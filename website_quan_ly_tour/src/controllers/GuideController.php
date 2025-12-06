@@ -160,5 +160,33 @@ public function downloadAssignment()
     readfile($path);
     exit;
 }
+  public function confirm()
+{
+    requireLogin();
+    $user = getCurrentUser();
+
+    if (!$user->isGuide()) die("Bạn không có quyền!");
+
+    $id = $_GET['id'] ?? null;
+    if (!$id) die("Thiếu ID booking!");
+
+    Booking::updateStatus($id, 2, $user->id, "HDV xác nhận tham gia tour");
+
+    redirect("guide-tours");
+}
+public function reject()
+{
+    requireLogin();
+    $user = getCurrentUser();
+
+    if (!$user->isGuide()) die("Bạn không có quyền!");
+
+    $id = $_GET['id'] ?? null;
+    if (!$id) die("Thiếu ID booking!");
+
+    Booking::updateStatus($id, 4, $user->id, "HDV từ chối tour"); // ví dụ status 5 = từ chối
+
+    redirect("guide-tours");
+}
 
 }
