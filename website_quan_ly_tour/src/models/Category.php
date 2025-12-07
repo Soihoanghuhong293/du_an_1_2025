@@ -59,5 +59,14 @@ public static function create($name, $description, $status)
         ':id' => $id
     ]);
 }
+public function getDetailById($id)
+{
+    $sql = "SELECT lich_trinh, gia_chi_tiet, chinh_sach, nha_cung_cap, trang_thai, created_at, updated_at 
+            FROM tours
+            WHERE id = ?";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([$id]);
+    return $stmt->fetch();
+}
 
 }

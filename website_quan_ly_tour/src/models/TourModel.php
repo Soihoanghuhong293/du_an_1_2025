@@ -3,6 +3,7 @@
 require_once __DIR__ . '/User.php';
 
 class Tour {
+    
 
     /**
      * Store last error message for debugging
@@ -254,4 +255,5 @@ class Tour {
     public function getLastError() {
         return self::$lastError;
     }
+    
 }

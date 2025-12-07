@@ -136,7 +136,8 @@ class TourController {
     // =============================================================
     // ⭐ DETAIL: Chi tiết Tour
     // =============================================================
-   public function detail() {
+   public function show() {
+
     $id = $_GET['id'] ?? null;
 
     if (!$id) {
@@ -159,6 +160,7 @@ class TourController {
         'content' => $content
     ]);
 }
+
 
 }
 
