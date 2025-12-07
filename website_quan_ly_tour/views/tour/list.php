@@ -106,6 +106,7 @@
                 <td><?= $tour['updated_at'] ?></td>
 
                 <td>
+                    <a href="<?= BASE_URL . 'index.php?act=tour-show&id=' . $tour['id'] ?>" class="btn btn-info btn-sm">Chi tiết</a>
                     <a href="<?= BASE_URL . 'index.php?act=tour-edit&id=' . $tour['id'] ?>" class="btn btn-warning btn-sm">Sửa</a>
                     <a href="<?= BASE_URL . 'index.php?act=tour-delete&id=' . $tour['id'] ?>" 
                        onclick="return confirm('Bạn có chắc muốn xóa?')" 

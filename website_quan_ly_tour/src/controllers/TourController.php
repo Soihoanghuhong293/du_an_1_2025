@@ -26,6 +26,29 @@ class TourController {
         ]);
     }
 
+    // =============================================================
+    // ⭐ SHOW (Chi tiết tour)
+    // =============================================================
+    public function show($id) {
+        if (!$id) { header('Location:' . BASE_URL . 'index.php?act=tour'); exit; }
+
+        $tour = $this->tourModel->getById($id);
+        if (!$tour) {
+            // Nếu không tìm thấy thì hiển thị trang 404
+            view('not_found');
+            return;
+        }
+
+        ob_start();
+        view('tour.show', ['tour' => $tour]);
+        $content = ob_get_clean();
+
+        view('layouts.AdminLayout', [
+            'title' => 'Chi tiết Tour',
+            'content' => $content
+        ]);
+    }
+
 
     // =============================================================
     // ⭐ 2. ADD (Thêm mới)

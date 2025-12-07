@@ -125,6 +125,8 @@ class Tour {
                 ':suppliers'    => json_encode($data['suppliers'] ?? [])
             ]);
         } catch (PDOException $e) {
+            // Log DB errors to help debugging
+            error_log('[Tour::create] PDOException: ' . $e->getMessage());
             return false;
         }
     }

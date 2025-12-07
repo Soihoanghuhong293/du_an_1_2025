@@ -1,6 +1,15 @@
 <form role="form" method="POST" action="" enctype="multipart/form-data">
 
     <div class="card-body">
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    <?php foreach ($errors as $err): ?>
+                        <li><?= htmlspecialchars($err) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
         <div class="mb-3">
             <label class="form-label">Tên Tour (*)</label>
             <input type="text" class="form-control" name="ten_tour" required value="<?= htmlspecialchars($_POST['ten_tour'] ?? '') ?>">

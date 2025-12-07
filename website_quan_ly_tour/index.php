@@ -115,6 +115,7 @@ match ($act) {
     'tour-add'       => $tourController->add(),
     'tour-edit'      => $tourController->edit($_GET['id'] ?? null),
     'tour-delete'    => $tourController->delete($_GET['id'] ?? null),
+    'tour-show'      => $tourController->show($_GET['id'] ?? null),
 
     // ===============================
     // ⭐ HƯỚNG DẪN VIÊN (HDV)
