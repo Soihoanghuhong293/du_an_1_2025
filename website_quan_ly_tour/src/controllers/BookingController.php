@@ -38,45 +38,83 @@ public function store()
         return;
     }
 
-    // ho tro xu li json
+    // 1. Helper xử lý JSON cho các trường Text (giữ nguyên của bạn)
     $processJsonInput = function($input) {
         $input = trim($input ?? '');
-        if ($input === '') {
-            return null; 
-        }
-        // check input
+        if ($input === '') return null;
         json_decode($input);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return $input; // json giu nguyen
-        }
-        // Nếu là chữ thường, ép kiểu thành JSON string
+        if (json_last_error() === JSON_ERROR_NONE) return $input;
         return json_encode($input, JSON_UNESCAPED_UNICODE);
     };
-    // ------------------------------------------
 
+    // =================================================================
+    // 2. XỬ LÝ FILE UPLOAD (ĐOẠN CODE MỚI THÊM)
+    // =================================================================
+    $filePaths = []; // Mảng chứa tên các file upload thành công
+
+    if (isset($_FILES['files']) && !empty($_FILES['files']['name'][0])) {
+        // Đường dẫn thư mục lưu (Bạn nhớ tạo thư mục này trong dự án: public/uploads/bookings hoặc tương tự)
+        // Dùng BASE_PATH nếu cần đường dẫn tuyệt đối, ví dụ:
+        // $uploadDir = BASE_PATH . '/public/uploads/bookings/'; 
+        // Ở đây mình ví dụ đường dẫn tương đối:
+        $uploadDir = 'uploads/bookings/'; 
+        
+        // Tạo thư mục nếu chưa tồn tại
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $countFiles = count($_FILES['files']['name']);
+
+        for ($i = 0; $i < $countFiles; $i++) {
+            $fileName = basename($_FILES['files']['name'][$i]);
+            $tmpName  = $_FILES['files']['tmp_name'][$i];
+            $error    = $_FILES['files']['error'][$i];
+
+            if ($error === UPLOAD_ERR_OK) {
+                // Đổi tên file để tránh trùng: timestamp_tenfile
+                $newFileName = time() . '_' . $i . '_' . $fileName;
+                $targetPath = $uploadDir . $newFileName;
+
+                if (move_uploaded_file($tmpName, $targetPath)) {
+                    // Chỉ lưu tên file vào mảng để sau này gọi ra
+                    $filePaths[] = $newFileName;
+                }
+            }
+        }
+    }
+
+    // Chuyển mảng tên file thành JSON để lưu vào DB
+    $jsonFiles = !empty($filePaths) ? json_encode($filePaths, JSON_UNESCAPED_UNICODE) : null;
+    // =================================================================
+
+
+    // 3. Chuẩn bị dữ liệu lưu DB
     $data = [
         'tour_id'           => $_POST['tour_id'],
         'created_by'        => getCurrentUser()->id ?? 1,
         'assigned_guide_id' => !empty($_POST['guide_id']) ? $_POST['guide_id'] : null,
         'status'            => !empty($_POST['status']) ? $_POST['status'] : 1,
         
-        // Format ngày tháng chuẩn MySQL
         'start_date'        => date('Y-m-d', strtotime($_POST['start_date'])),
         'end_date'          => date('Y-m-d', strtotime($_POST['end_date'])),
         
         'notes'             => $_POST['notes'],
 
-        // xu li cot json
         'schedule_detail'   => $processJsonInput($_POST['schedule_detail']),
         'service_detail'    => $processJsonInput($_POST['service_detail']),
         'diary'             => $processJsonInput($_POST['diary']),
-        'lists_file'        => $processJsonInput($_POST['lists_file']),
+
+        // SỬA DÒNG NÀY: Thay vì lấy từ POST, ta lấy biến $jsonFiles vừa xử lý ở trên
+        'lists_file'        => $jsonFiles, 
     ];
 
+    // Kiểm tra logic ngày
     if ($data['end_date'] < $data['start_date']) {
         die("Lỗi: Ngày kết thúc không được nhỏ hơn ngày bắt đầu.");
     }
 
+    // Lưu vào DB
     try {
         if (Booking::create($data)) {
             redirect("bookings");
@@ -84,10 +122,10 @@ public function store()
             die("Có lỗi xảy ra khi lưu Booking.");
         }
     } catch (\PDOException $e) {
-        // In lỗi chi tiết nếu vẫn bị
         die("Lỗi Database: " . $e->getMessage());
     }
-}    public function delete($id)
+}
+   public function delete($id)
     {
         $booking = Booking::find($id);
 

@@ -11,7 +11,7 @@
       </div>
 
       <div class="card-body">
-        <form action="index.php?act=booking-store" method="POST">
+        <form action="index.php?act=booking-store" method="POST" enctype="multipart/form-data">
           
           <div class="row">
             <div class="col-md-6 mb-3">
@@ -23,8 +23,6 @@
                 <?php endforeach; ?>
               </select>
             </div>
-
-            
           </div>
 
           <div class="row">
@@ -70,10 +68,12 @@
               <label class="form-label">Nhật ký tour (Diary)</label>
               <textarea name="diary" class="form-control" rows="3"></textarea>
             </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Danh sách File (Lists File)</label>
-              <textarea name="lists_file" class="form-control" rows="3" placeholder="Nhập đường dẫn file hoặc ghi chú file..."></textarea>
-            </div>
+            
+           <div class="col-md-6 mb-3">
+        <label class="form-label">File đính kèm (Ảnh, PDF, Docx...)</label>
+        <input type="file" name="files[]" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx">
+        <small class="text-muted">Giữ phím Ctrl để chọn nhiều file.</small>
+    </div>
           </div>
 
           <div class="mb-3">
