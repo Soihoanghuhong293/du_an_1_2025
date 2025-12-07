@@ -120,9 +120,14 @@ class TourController {
 
                 header('Location: ' . BASE_URL . 'index.php?act=tour');
                 exit;
+            } else {
+                $errors[] = "Thêm tour thất bại.";
+                // If the model has an error message, append it to help debug
+                $lastErr = $this->tourModel->getLastError();
+                if ($lastErr) {
+                    $errors[] = "Lỗi DB: " . $lastErr;
+                }
             }
-
-            $errors[] = "Thêm tour thất bại.";
         }
     }
 

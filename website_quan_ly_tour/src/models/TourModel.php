@@ -4,6 +4,12 @@ require_once __DIR__ . '/User.php';
 
 class Tour {
 
+    /**
+     * Store last error message for debugging
+     * @var string|null
+     */
+    private static $lastError = null;
+
     public function __construct() {}
 
     private function safeJson($value) {
@@ -126,6 +132,7 @@ class Tour {
             ]);
         } catch (PDOException $e) {
             // Log DB errors to help debugging
+            self::$lastError = $e->getMessage();
             error_log('[Tour::create] PDOException: ' . $e->getMessage());
             return false;
         }
@@ -237,5 +244,13 @@ class Tour {
         } catch (PDOException $e) {
             return false;
         }
+    }
+
+    /**
+     * Return last error message captured by model
+     * @return string|null
+     */
+    public function getLastError() {
+        return self::$lastError;
     }
 }
