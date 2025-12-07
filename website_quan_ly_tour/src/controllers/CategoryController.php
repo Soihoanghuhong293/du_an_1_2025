@@ -77,4 +77,32 @@ class CategoryController
     require __DIR__ . '/../../views/layouts/AdminLayout.php';
      }
 
+    // API trả về thông tin Tour (Dùng cho Ajax ở trang Create Booking)
+    public function getTourInfo()
+    {
+        // Xóa bộ nhớ đệm output để đảm bảo JSON sạch, không bị lỗi cú pháp do khoảng trắng thừa
+        if (ob_get_length()) ob_clean(); 
+        
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $tourId = $_POST['tour_id'] ?? null;
+
+            if ($tourId) {
+                // Gọi hàm mới vừa viết bên Model
+                $tour = Booking::getTourById($tourId);
+
+                if ($tour) {
+                    echo json_encode(['status' => 'success', 'data' => $tour]);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy Tour']);
+                }
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Thiếu ID Tour']);
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+        }
+        exit; 
+    }
 }

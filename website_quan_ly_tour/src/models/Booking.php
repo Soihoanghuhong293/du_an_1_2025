@@ -214,9 +214,7 @@ class Booking
         return $data;
     }
 
-    // ============================================================
-    // ⭐ CHỨC NĂNG 4: Lưu nhật ký bằng cách cập nhật cột `diary`
-    // ============================================================
+    
     public static function updateDiary($bookingId, $diary)
     {
         $db = getDB();
@@ -234,9 +232,7 @@ class Booking
         ]);
     }
 
-    // ============================================================
-    // ⭐ CẬP NHẬT TRẠNG THÁI (Có Transaction an toàn)
-    // ============================================================
+   
     public static function updateStatus($bookingId, $newStatus, $userId, $note = null)
     {
         $db = getDB();
@@ -281,5 +277,13 @@ class Booking
             $db->rollBack();
             return false;
         }
+    }
+    // Hàm lấy chi tiết 1 Tour để đổ dữ liệu sang form Booking
+    public static function getTourById($id)
+    {
+        $db = getDB();
+        $stmt = $db->prepare("SELECT * FROM tours WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

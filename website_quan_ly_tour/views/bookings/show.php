@@ -1,39 +1,4 @@
-<style>
-    body { background-color: #f4f6f9; color: #495057; }
-    .card-modern { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border-radius: 12px; background: #fff; margin-bottom: 1.5rem; }
-    .card-header-modern { background-color: #fff; border-bottom: 1px solid #f0f0f0; padding: 1.25rem; border-radius: 12px 12px 0 0 !important; font-weight: 600; color: #2c3e50; display: flex; align-items: center; justify-content: space-between; }
-    .nav-tabs-modern { border-bottom: 1px solid #dee2e6; }
-    .nav-tabs-modern .nav-link { border: none; border-bottom: 2px solid transparent; color: #6c757d; font-weight: 600; padding: 1rem 1.5rem; }
-    .nav-tabs-modern .nav-link.active { color: #0d6efd; border-bottom: 2px solid #0d6efd; background: transparent; }
-    .info-label { color: #8898aa; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 0.25rem; }
-    .info-value { font-size: 1rem; font-weight: 500; color: #32325d; margin-bottom: 1rem; }
-    .timeline-item { position: relative; padding-left: 1.5rem; border-left: 2px solid #e9ecef; padding-bottom: 1rem; }
-    .timeline-item::before { content: ''; position: absolute; left: -5px; top: 0; width: 8px; height: 8px; border-radius: 50%; background: #adb5bd; }
-    .timeline-item:first-child::before { background: #0d6efd; }
-
-    /* Style cho File Upload Item */
-    .file-card { transition: all 0.2s; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden; }
-    .file-card:hover { border-color: #0d6efd; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateY(-2px); }
-    .file-icon-box { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border-radius: 6px; }
-
-    @media print {
-        @page { margin: 20mm; size: auto; }
-        body { 
-            background: white !important; 
-            font-family: "Times New Roman", Times, serif !important;
-            color: #000 !important;
-            -webkit-print-color-adjust: exact !important; 
-            print-color-adjust: exact !important;
-        }
-        .col-md-4, .d-print-none, .nav-tabs-modern, header, footer, nav, .btn { display: none !important; }
-        .col-md-8 { width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-        .card-modern { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
-        .card-header-modern { display: none !important; }
-        .d-print-block { display: block !important; margin-bottom: 20px !important; }
-        input.form-control { border: none !important; background: transparent !important; padding: 0 !important; width: auto !important; font-weight: bold; color: #000; }
-        tr { page-break-inside: avoid; }
-    }
-</style>
+<link rel="stylesheet" href="<?= BASE_URL ?>/public/css/show.css">
 
 <div class="d-flex justify-content-between align-items-center mb-4 pt-3">
     <div>
@@ -94,7 +59,7 @@
                     <div class="tab-pane fade" id="files">
                         <?php 
                             $files = json_decode($booking['lists_file'] ?? '[]', true); 
-                            $uploadPath = 'uploads/bookings/'; // Đường dẫn thư mục chứa file
+                            $uploadPath = 'uploads/bookings/'; 
                         ?>
                         
                         <?php if (!empty($files) && is_array($files)): ?>
@@ -103,7 +68,6 @@
                                     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                                     $fullPath = $uploadPath . $file;
                                     
-                                    // Xác định icon dựa trên đuôi file
                                     $iconClass = 'bi-file-earmark';
                                     $iconColor = 'bg-light text-secondary';
                                     
@@ -154,7 +118,7 @@
                             </div>
                         <?php endif; ?>
                     </div>
-                    </div>
+                </div>
             </div>
         </div>
 
@@ -173,6 +137,21 @@
                     <p>HDV: <?= htmlspecialchars($booking['guide_name'] ?? 'Chưa phân công') ?></p>
                 </div>
 
+                <div class="d-flex align-items-center justify-content-between mb-3 bg-white p-3 rounded shadow-sm border d-print-none">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-circle p-2">
+                            <i class="bi bi-qr-code-scan fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Tiến độ Check-in</h6>
+                            <small class="text-muted">Đã có mặt: <strong class="text-success" id="checkin-count">0</strong> / <?= count($guests) ?> khách</small>
+                        </div>
+                    </div>
+                    <div class="progress flex-grow-1 mx-3" style="height: 10px; max-width: 200px;">
+                        <div class="progress-bar bg-success" id="checkin-progress" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+
                 <form action="index.php?act=guest-update-rooms" method="POST">
                     <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
 
@@ -181,6 +160,7 @@
                             <thead class="bg-light text-secondary">
                                 <tr>
                                     <th class="border-top-0 ps-3">#</th>
+                                    <th class="border-top-0 text-center" style="width: 100px;">Check-in</th>
                                     <th class="border-top-0">Họ và Tên</th>
                                     <th class="border-top-0">Thông tin</th>
                                     <th class="border-top-0" style="width: 20%">Phòng</th>
@@ -191,8 +171,22 @@
                             <tbody>
                                 <?php if (!empty($guests)): ?>
                                     <?php foreach ($guests as $index => $guest): ?>
-                                        <tr>
+                                        <tr class="<?= ($guest['is_checkin'] ?? 0) == 1 ? 'table-success' : '' ?>">
                                             <td class="ps-3 text-muted"><?= $index + 1 ?></td>
+                                            
+                                            <td class="text-center">
+                                                <div class="form-check form-switch d-flex justify-content-center">
+                                                    <input class="form-check-input checkin-toggle" type="checkbox" role="switch" 
+                                                        id="guest_<?= $guest['id'] ?>" 
+                                                        data-id="<?= $guest['id'] ?>" 
+                                                        <?= (($guest['is_checkin'] ?? 0) == 1) ? 'checked' : '' ?>
+                                                        style="cursor: pointer; transform: scale(1.3);">
+                                                </div>
+                                                <small class="text-muted d-block mt-1 checkin-time" style="font-size: 10px;">
+                                                    <?= (($guest['is_checkin'] ?? 0) == 1 && ($guest['checkin_at'] ?? null)) ? date('H:i d/m', strtotime($guest['checkin_at'])) : '' ?>
+                                                </small>
+                                            </td>
+
                                             <td>
                                                 <div class="fw-bold text-dark"><?= htmlspecialchars($guest['full_name']) ?></div>
                                                 <small class="text-muted"><?= htmlspecialchars($guest['gender']) ?></small>
@@ -219,7 +213,7 @@
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
-                                    <tr><td colspan="6" class="text-center py-4 text-muted fst-italic">Chưa có khách nào trong đoàn này.</td></tr>
+                                    <tr><td colspan="7" class="text-center py-4 text-muted fst-italic">Chưa có khách nào trong đoàn này.</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
@@ -377,7 +371,6 @@
 </div>
 
 <script>
-function printGuestList() {
-    window.print();
-}
+    const TOTAL_GUESTS = <?= count($guests) ?>;
 </script>
+<script src="public/js/show.js"></script>

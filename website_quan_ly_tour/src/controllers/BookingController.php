@@ -210,4 +210,72 @@ public function store()
             exit;
         }
     }
+    
+ /// xử lí lấy dữ liệu lịch trình khi tạo booking
+public function ajaxCheckin()
+{
+    // Set header JSON để JS nhận diện đúng
+    header('Content-Type: application/json');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $guest_id = $_POST['guest_id'] ?? 0;
+        $status = $_POST['status'] ?? 0;
+        
+        if ($guest_id) {
+            $checkin_at = ($status == 1) ? date('Y-m-d H:i:s') : NULL;
+            
+            // Gọi Model cập nhật DB 
+            $pdo = getDB(); 
+            
+            // Cập nhật trạng thái
+            $sql = "UPDATE booking_guests SET is_checkin = :status, checkin_at = :at WHERE id = :id";
+            $stmt = $pdo->prepare($sql);
+            $result = $stmt->execute([
+                ':status' => $status,
+                ':at' => $status == 1 ? $checkin_at : null,
+                ':id' => $guest_id
+            ]);
+
+            if ($result) {
+                echo json_encode(['success' => true, 'message' => 'Cập nhật thành công']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Lỗi SQL']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Thiếu ID khách']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    }
+    exit; 
+}
+
+  // API trả về thông tin Tour 
+    public function getTourInfo()
+    {
+        // Xóa bộ nhớ đệm output để đảm bảo JSON sạch
+        if (ob_get_length()) ob_clean(); 
+        
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $tourId = $_POST['tour_id'] ?? null;
+
+            if ($tourId) {
+                // Gọi hàm bên Model 
+                $tour = Booking::getTourById($tourId);
+
+                if ($tour) {
+                    echo json_encode(['status' => 'success', 'data' => $tour]);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy Tour']);
+                }
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Thiếu ID Tour']);
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+        }
+        exit; 
+    }
 }

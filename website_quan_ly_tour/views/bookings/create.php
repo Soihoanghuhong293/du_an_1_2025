@@ -3,11 +3,6 @@
     <div class="card">
       <div class="card-header">
         <h3 class="card-title">Tạo Booking</h3>
-        <div class="card-tools">
-          <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-            <i class="bi bi-dash-lg"></i>
-          </button>
-        </div>
       </div>
 
       <div class="card-body">
@@ -16,7 +11,7 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="form-label">Chọn Tour <span class="text-danger">*</span></label>
-              <select name="tour_id" class="form-control" required>
+              <select name="tour_id" id="select_tour" class="form-control" required>
                 <option value="">-- Chọn Tour --</option>
                 <?php foreach ($tours as $tour): ?>
                   <option value="<?= $tour['id'] ?>"><?= $tour['name'] ?></option>
@@ -50,30 +45,29 @@
           </div>
 
           <hr>
-          <h5 class="mb-3 text-primary">Thông tin chi tiết (JSON/Text)</h5>
+          <h5 class="mb-3 text-primary">Thông tin chi tiết (Tự động tải từ Tour)</h5>
 
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label">Chi tiết lịch trình (Schedule Detail)</label>
-              <textarea name="schedule_detail" class="form-control" rows="4" placeholder="Nhập chi tiết lịch trình..."></textarea>
+              <label class="form-label">Chi tiết lịch trình (Có thể chỉnh sửa)</label>
+              <textarea name="schedule_detail" id="schedule_detail" class="form-control" rows="10" placeholder="Chọn tour để tải lịch trình..."></textarea>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Chi tiết dịch vụ (Service Detail)</label>
-              <textarea name="service_detail" class="form-control" rows="4" placeholder="Nhập chi tiết dịch vụ..."></textarea>
+              <label class="form-label">Chi tiết dịch vụ</label>
+               <textarea name="service_detail" id="service_detail" class="form-control" rows="10" placeholder="Chi tiết dịch vụ..."></textarea>
             </div>
           </div>
 
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label">Nhật ký tour (Diary)</label>
+              <label class="form-label">Nhật ký tour</label>
               <textarea name="diary" class="form-control" rows="3"></textarea>
             </div>
             
            <div class="col-md-6 mb-3">
-        <label class="form-label">File đính kèm (Ảnh, PDF, Docx...)</label>
-        <input type="file" name="files[]" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx">
-        <small class="text-muted">Giữ phím Ctrl để chọn nhiều file.</small>
-    </div>
+            <label class="form-label">File đính kèm</label>
+            <input type="file" name="files[]" class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx">
+           </div>
           </div>
 
           <div class="mb-3">
@@ -87,6 +81,9 @@
     </div>
   </div>
 </div>
+
+<script src="public/js/create.js"></script>
+
 <?php
 // Lấy toàn bộ nội dung vừa tạo
 $content = ob_get_clean();

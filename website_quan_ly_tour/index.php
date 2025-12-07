@@ -133,10 +133,11 @@ match ($act) {
 
     'guide-confirm' => $guideController->confirm(),
 'guide-reject'  => $guideController->reject(),
+'guest-ajax-checkin' => $bookingController->ajaxCheckin(),
 
 
-    // ===============================
-    // ⭐ 404
-    // ===============================
+  //  API LẤY THÔNG TIN TOUR 
+    'api-get-tour-info' => $bookingController->getTourInfo(),
+    
     default => $homeController->notFound(),
 };
