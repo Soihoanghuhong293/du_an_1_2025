@@ -19,7 +19,8 @@ require_once __DIR__ . '/src/helpers/database.php';
 // Models
 require_once __DIR__ . '/src/models/User.php';
 require_once __DIR__ . '/src/models/TourModel.php';
-require_once __DIR__ . '/src/models/Booking.php';   // ⭐ THÊM MỚI
+require_once __DIR__ . '/src/models/Booking.php'; 
+require_once __DIR__ . '/src/models/BookingService.php';  // ⭐ THÊM MỚI
 
 // Controllers
 require_once __DIR__ . '/src/controllers/HomeController.php';
@@ -29,6 +30,9 @@ require_once __DIR__ . '/src/controllers/BookingController.php';
 require_once __DIR__ . '/src/controllers/CategoryController.php';
 require_once __DIR__ . '/src/controllers/UserController.php';
 require_once __DIR__ . '/src/controllers/GuideController.php';  // ⭐ THÊM MỚI
+require_once __DIR__ . '/src/controllers/BookingServiceController.php';
+
+
 
 // Khởi tạo controller
 $homeController = new HomeController();
@@ -38,6 +42,7 @@ $bookingController = new BookingController();
 $categoryController = new CategoryController();
 $userController = new UserController();
 $guideController = new GuideController();  // ⭐ THÊM MỚI
+$bookingServiceController = new BookingServiceController();
 
 // Lấy tham số act (mặc định '/')
 $act = $_GET['act'] ?? '/';
@@ -141,6 +146,10 @@ match ($act) {
     'booking-update-diary' => $bookingController->updateDiary(),
     'booking-update-schedule' => $bookingController->updateSchedule(),
     'booking-update-service'  => $bookingController->updateService(),
+
+    // PHÂN BỔ DỊCH VỤ
+    'booking-service-add'    => $bookingServiceController->add(),
+    'booking-service-delete' => $bookingServiceController->delete(),
     
     default => $homeController->notFound(),
 };

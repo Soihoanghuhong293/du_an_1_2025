@@ -46,10 +46,84 @@ function formatTextContent($text) {
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#service">Dịch vụ</button></li>
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#diary">Nhật ký</button></li>
                     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#files">Files đính kèm</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#operations">Điều hành & Dịch vụ</button></li>
                 </ul>
             </div>
             <div class="card-body">
                 <div class="tab-content pt-2">
+                    <div class="tab-pane fade" id="operations">
+    <div class="card-body p-0 pt-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title m-0 text-primary"><i class="bi bi-briefcase-fill"></i> Phân bổ dịch vụ</h5>
+            <button class="btn btn-light text-primary btn-sm fw-bold d-print-none" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                <i class="bi bi-plus-lg"></i> Thêm Dịch Vụ
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 120px;">Ngày</th>
+                        <th style="width: 120px;">Loại hình</th>
+                        <th>Nhà cung cấp / Chi tiết</th>
+                        <th style="width: 80px;" class="text-center">SL</th>
+                        <th>Trạng thái</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($services)): ?>
+                        <?php foreach ($services as $svc): 
+                            // Định nghĩa màu sắc và icon cho từng loại
+                            $typeConfig = [
+                                'transport'  => ['icon' => 'bi-bus-front', 'color' => 'info', 'label' => 'Xe vận chuyển'],
+                                'hotel'      => ['icon' => 'bi-buildings', 'color' => 'primary', 'label' => 'Khách sạn'],
+                                'restaurant' => ['icon' => 'bi-cup-hot', 'color' => 'warning', 'label' => 'Nhà hàng'],
+                                'ticket'     => ['icon' => 'bi-ticket-perforated', 'color' => 'success', 'label' => 'Vé tham quan'],
+                                'other'      => ['icon' => 'bi-gear', 'color' => 'secondary', 'label' => 'Khác'],
+                            ];
+                            $currType = $typeConfig[$svc['service_type']] ?? $typeConfig['other'];
+                        ?>
+                        <tr>
+                            <td><?= date('d/m/Y', strtotime($svc['use_date'])) ?></td>
+                            <td>
+                                <span class="badge bg-<?= $currType['color'] ?> text-white">
+                                    <i class="bi <?= $currType['icon'] ?>"></i> <?= $currType['label'] ?>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-bold"><?= htmlspecialchars($svc['provider_name']) ?></div>
+                                <?php if($svc['note']): ?>
+                                    <small class="text-muted fst-italic"><i class="bi bi-sticky"></i> <?= htmlspecialchars($svc['note']) ?></small>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-center fw-bold"><?= $svc['quantity'] ?></td>
+                            <td>
+                                <?php if($svc['status'] == 0): ?>
+                                    <span class="badge bg-secondary">Chờ đặt</span>
+                                <?php elseif($svc['status'] == 1): ?>
+                                    <span class="badge bg-warning text-dark">Đã cọc</span>
+                                <?php else: ?>
+                                    <span class="badge bg-success">Đã chốt</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-center">
+                                <a href="index.php?act=booking-service-delete&id=<?= $svc['id'] ?>&booking_id=<?= $booking['id'] ?>" 
+                                   class="text-danger" onclick="return confirm('Xóa dịch vụ này?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr><td colspan="6" class="text-center text-muted py-4">Chưa có dịch vụ nào được phân bổ.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
                     <div class="tab-pane fade show active" id="schedule">
     <div class="card-body p-0 pt-3">
         <form action="index.php?act=booking-update-schedule" method="POST">
@@ -412,6 +486,69 @@ function formatTextContent($text) {
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     <button type="submit" class="btn btn-primary px-4 fw-bold">Thêm khách</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addServiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="index.php?act=booking-service-add" method="POST">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">Phân bổ dịch vụ mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Loại dịch vụ</label>
+                        <select name="service_type" class="form-select" required>
+                            <option value="transport">🚗 Xe vận chuyển</option>
+                            <option value="hotel">🏨 Khách sạn / Lưu trú</option>
+                            <option value="restaurant">🍽️ Nhà hàng / Ăn uống</option>
+                            <option value="ticket">🎫 Vé tham quan</option>
+                            <option value="other">⚙️ Khác</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Ngày sử dụng</label>
+                            <input type="date" name="use_date" class="form-control" 
+                                   value="<?= $booking['start_date'] ?>"
+                                   min="<?= $booking['start_date'] ?>" max="<?= $booking['end_date'] ?>" required>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Số lượng</label>
+                            <input type="number" name="quantity" class="form-control" value="1" min="1">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tên nhà cung cấp / Dịch vụ <span class="text-danger">*</span></label>
+                        <input type="text" name="provider_name" class="form-control" placeholder="VD: Xe 29 chỗ, NH Hạnh Phúc..." required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú (SĐT, Thực đơn, Mã vé...)</label>
+                        <textarea name="note" class="form-control" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Trạng thái</label>
+                        <select name="status" class="form-select">
+                            <option value="0">Chờ đặt (Mới)</option>
+                            <option value="1">Đã đặt cọc</option>
+                            <option value="2">Đã xác nhận (OK)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">Lưu thông tin</button>
                 </div>
             </form>
         </div>

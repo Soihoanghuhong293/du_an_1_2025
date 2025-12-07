@@ -1,7 +1,7 @@
 <?php
 require_once BASE_PATH . '/src/models/BookingGuest.php';
 require_once BASE_PATH . '/src/models/Booking.php';
-
+require_once BASE_PATH . '/src/models/BookingService.php';
 class BookingController
 {
     //lits
@@ -149,10 +149,13 @@ public function store()
         
         //  Lấy danh sách khách hàng từ bảng mới
         $guests = BookingGuest::getByBookingId($id);
+        // Lấy danh sách dịch vụ từ DB
+        $services = BookingService::getByBookingId($id);
 
         if (!$booking) { echo "Booking không tồn tại!"; return; }
 
         $title = "Chi tiết Booking #" . $booking['id'];
+        
         
         ob_start();
         require_once './views/bookings/show.php';
