@@ -2,25 +2,19 @@
 
 class CategoryController
 {
-    public function index()
-     {
-        // Nạp model
-        require_once __DIR__ . '/../models/Category.php';
+    public function index(): void
+{
+    // 1. Nạp model (giữ nguyên)
+    require_once __DIR__ . '/../models/Category.php';
 
-        // Lấy dữ liệu từ model
-        $categories = Category::all();
+    $categories = Category::all();
 
-        // Tạo biến tiêu đề
-        $title = "Quản lý Danh mục";
-
-        // Nhúng view con vào layout admin
-        ob_start();
-        require_once __DIR__ . '/../../views/categories/index.php'; // view con
-        $content = ob_get_clean();
-
-        // Gọi layout admin
-        require_once __DIR__ . '/../../views/layouts/AdminLayout.php';
-    }
+   
+    view('categories.index', [
+        'categories' => $categories,
+        'title'      => 'Quản lý Danh mục'
+    ]);
+}
     public function delete($id=null)
     {
         if($id){
@@ -83,4 +77,32 @@ class CategoryController
     require __DIR__ . '/../../views/layouts/AdminLayout.php';
      }
 
+    // API trả về thông tin Tour (Dùng cho Ajax ở trang Create Booking)
+    public function getTourInfo()
+    {
+        // Xóa bộ nhớ đệm output để đảm bảo JSON sạch, không bị lỗi cú pháp do khoảng trắng thừa
+        if (ob_get_length()) ob_clean(); 
+        
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $tourId = $_POST['tour_id'] ?? null;
+
+            if ($tourId) {
+                // Gọi hàm mới vừa viết bên Model
+                $tour = Booking::getTourById($tourId);
+
+                if ($tour) {
+                    echo json_encode(['status' => 'success', 'data' => $tour]);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy Tour']);
+                }
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Thiếu ID Tour']);
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+        }
+        exit; 
+    }
 }

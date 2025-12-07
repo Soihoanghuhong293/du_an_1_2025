@@ -1,5 +1,17 @@
-<div class="table-responsive">
-    <h3 style="margin-bottom: 15px;">Danh Sách Tour Hiện Tại</h3>
+
+<div class="row">
+  <div class="col-12">
+    <!-- Card Danh mục -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Danh sách Tours</h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+            <i class="bi bi-dash-lg"></i>
+          </button>
+        </div>
+      </div>
+<div class="card-body">
 
     <table class="table table-bordered table-hover align-middle">
         <thead class="table-light">
@@ -95,17 +107,10 @@
 
                 <!-- THAO TÁC -->
                 <td>
-                    <a href="index.php?controller=tour&action=edit&id=<?= $tour['id'] ?>" 
-                       class="btn btn-warning btn-sm">
-                        Sửa
-                    </a>
 
-                    <a href="index.php?controller=tour&action=detail&id=<?= $tour['id'] ?>" 
-                       class="btn btn-info btn-sm">
-                        Xem chi tiết
-                    </a>
-
-                    <a href="index.php?controller=tour&action=delete&id=<?= $tour['id'] ?>" 
+                    <a href="<?= BASE_URL . 'index.php?act=tour-show&id=' . $tour['id'] ?>" class="btn btn-info btn-sm">Chi tiết</a>
+                    <a href="<?= BASE_URL . 'index.php?act=tour-edit&id=' . $tour['id'] ?>" class="btn btn-warning btn-sm">Sửa</a>
+                    <a href="<?= BASE_URL . 'index.php?act=tour-delete&id=' . $tour['id'] ?>" 
                        onclick="return confirm('Bạn có chắc muốn xóa?')" 
                        class="btn btn-danger btn-sm">
                         Xóa
@@ -118,3 +123,18 @@
         </tbody>
     </table>
 </div>
+
+<?php
+// Lấy toàn bộ nội dung vừa tạo
+$content = ob_get_clean();
+
+// Hiển thị layout Admin
+view('layouts.AdminLayout', [
+    'title' => 'tour - Website Quản Lý Tour',
+    'pageTitle' => 'Tour',
+    'content' => $content,
+    'breadcrumb' => [
+        ['label' => 'Danh mục', 'url' => BASE_URL . 'home', 'active' => true],
+    ],
+]);
+?>

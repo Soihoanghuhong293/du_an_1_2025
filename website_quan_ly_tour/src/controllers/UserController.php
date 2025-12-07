@@ -113,4 +113,20 @@ class UserController
             'user' => $user
         ]);
     }
+    public function toggleStatus()
+    {
+        $id = $_GET['id'] ?? null;
+        if (!$id) redirect('users');
+    
+        $user = User::find($id);
+        if (!$user) die("User không tồn tại!");
+    
+        // Sử dụng -> thay vì []
+        $newStatus = $user->status == 1 ? 0 : 1;
+    
+        User::updateStatus($id, $newStatus);
+    
+        redirect('users');
+    }
+        
 }
