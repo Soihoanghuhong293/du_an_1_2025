@@ -1,87 +1,339 @@
 <?php
-
+require_once BASE_PATH . '/src/models/BookingGuest.php';
 require_once BASE_PATH . '/src/models/Booking.php';
-
+require_once BASE_PATH . '/src/models/BookingService.php';
 class BookingController
 {
-   public function index(): void
-{
-    // 1. Lấy dữ liệu từ Model
-    // (Đảm bảo bạn đã require model hoặc dùng autoloader)
-    $bookings = Booking::all();
+    //lits
+    public function index(): void
+    {
+        $bookings = Booking::all();
 
-    // 2. Gọi hàm view helper
-    view('bookings.index', [
-        'bookings' => $bookings,
-        'title'    => 'Quản lý Bookzcxing'
-    ]);
-}
+        view('bookings.index', [
+            'bookings' => $bookings,
+            'title' => 'Quản lý Booking'
+        ]);
+    }
 
-    // 1. Hiển thị Form thêm mới
+ // hiển thị form tạo booking
     public function create()
     {
         $tours = Booking::getTours();
         $guides = Booking::getGuides();
         $statuses = Booking::getStatuses();
 
-        $title = "Thêm mới Booking";
-        
-        ob_start();
-        require_once './views/bookings/create.php';
-        $content = ob_get_clean();
-        
-        require_once './views/layouts/AdminLayout.php';
+        view('bookings.create', [
+            'tours' => $tours,
+            'guides' => $guides,
+            'statuses' => $statuses,
+            'title' => 'Thêm Booking mới'
+        ]);
     }
 
-    // 2. Xử lý lưu dữ liệu khi nhấn Submit
-    public function store()
-    {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Lấy dữ liệu từ form
-            $data = [
-                'tour_id' => $_POST['tour_id'],
-                // Nếu bạn có session login thì lấy ID người đang login: $_SESSION['user_id']
-                // Tạm thời mình để cứng là 1 (Admin) theo DB mẫu
-                'created_by' => 1, 
-                'assigned_guide_id' => !empty($_POST['guide_id']) ? $_POST['guide_id'] : null,
-                'status' => $_POST['status'],
-                'start_date' => $_POST['start_date'],
-                'end_date' => $_POST['end_date'],
-                'notes' => $_POST['notes']
-            ];
 
-            // Gọi Model để lưu
-            if (Booking::create($data)) {
-                // Thành công thì chuyển về trang danh sách
-               header("Location: bookings");
-                exit;
-            } else {
-                echo "Có lỗi xảy ra, vui lòng thử lại!";
+public function store()
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        redirect('booking-create');
+        return;
+    }
+
+    // 1. Helper xử lý JSON cho các trường Text (giữ nguyên của bạn)
+    $processJsonInput = function($input) {
+        $input = trim($input ?? '');
+        if ($input === '') return null;
+        json_decode($input);
+        if (json_last_error() === JSON_ERROR_NONE) return $input;
+        return json_encode($input, JSON_UNESCAPED_UNICODE);
+    };
+
+    // =================================================================
+    // 2. XỬ LÝ FILE UPLOAD (ĐOẠN CODE MỚI THÊM)
+    // =================================================================
+    $filePaths = []; // Mảng chứa tên các file upload thành công
+
+    if (isset($_FILES['files']) && !empty($_FILES['files']['name'][0])) {
+        // Đường dẫn thư mục lưu (Bạn nhớ tạo thư mục này trong dự án: public/uploads/bookings hoặc tương tự)
+        // Dùng BASE_PATH nếu cần đường dẫn tuyệt đối, ví dụ:
+        // $uploadDir = BASE_PATH . '/public/uploads/bookings/'; 
+        // Ở đây mình ví dụ đường dẫn tương đối:
+        $uploadDir = 'uploads/bookings/'; 
+        
+        // Tạo thư mục nếu chưa tồn tại
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $countFiles = count($_FILES['files']['name']);
+
+        for ($i = 0; $i < $countFiles; $i++) {
+            $fileName = basename($_FILES['files']['name'][$i]);
+            $tmpName  = $_FILES['files']['tmp_name'][$i];
+            $error    = $_FILES['files']['error'][$i];
+
+            if ($error === UPLOAD_ERR_OK) {
+                // Đổi tên file để tránh trùng: timestamp_tenfile
+                $newFileName = time() . '_' . $i . '_' . $fileName;
+                $targetPath = $uploadDir . $newFileName;
+
+                if (move_uploaded_file($tmpName, $targetPath)) {
+                    // Chỉ lưu tên file vào mảng để sau này gọi ra
+                    $filePaths[] = $newFileName;
+                }
             }
         }
     }
-    // ... Các hàm index, create, store giữ nguyên
 
-    // 3. Xử lý xóa
-    public function delete($id)
+    // Chuyển mảng tên file thành JSON để lưu vào DB
+    $jsonFiles = !empty($filePaths) ? json_encode($filePaths, JSON_UNESCAPED_UNICODE) : null;
+    // =================================================================
+
+
+    // 3. Chuẩn bị dữ liệu lưu DB
+    $data = [
+        'tour_id'           => $_POST['tour_id'],
+        'created_by'        => getCurrentUser()->id ?? 1,
+        'assigned_guide_id' => !empty($_POST['guide_id']) ? $_POST['guide_id'] : null,
+        'status'            => !empty($_POST['status']) ? $_POST['status'] : 1,
+        
+        'start_date'        => date('Y-m-d', strtotime($_POST['start_date'])),
+        'end_date'          => date('Y-m-d', strtotime($_POST['end_date'])),
+        
+        'notes'             => $_POST['notes'],
+
+        'schedule_detail'   => $processJsonInput($_POST['schedule_detail']),
+        'service_detail'    => $processJsonInput($_POST['service_detail']),
+        'diary'             => $processJsonInput($_POST['diary']),
+
+        // SỬA DÒNG NÀY: Thay vì lấy từ POST, ta lấy biến $jsonFiles vừa xử lý ở trên
+        'lists_file'        => $jsonFiles, 
+    ];
+
+    // Kiểm tra logic ngày
+    if ($data['end_date'] < $data['start_date']) {
+        die("Lỗi: Ngày kết thúc không được nhỏ hơn ngày bắt đầu.");
+    }
+
+    // Lưu vào DB
+    try {
+        if (Booking::create($data)) {
+            redirect("bookings");
+        } else {
+            die("Có lỗi xảy ra khi lưu Booking.");
+        }
+    } catch (\PDOException $e) {
+        die("Lỗi Database: " . $e->getMessage());
+    }
+}
+   public function delete($id)
     {
-        // Kiểm tra xem ID có tồn tại không
         $booking = Booking::find($id);
 
         if (!$booking) {
-            // Có thể set session flash message lỗi ở đây
-            echo "Booking không tồn tại!";
-            return;
+            die("Booking không tồn tại!");
         }
 
-        // Thực hiện xóa
         if (Booking::delete($id)) {
-            // Xóa thành công, quay về trang danh sách
-            header("Location: " . BASE_URL . "bookings"); 
-            // Lưu ý: Đảm bảo đường dẫn header location đúng với router của bạn
-            exit;
+            redirect("bookings");
         } else {
-            echo "Xóa thất bại! Có lỗi hệ thống.";
+            die("Xóa thất bại!");
         }
+    }
+
+    public function show($id)
+    {
+        if (!$id) { header("Location: index.php?act=bookings"); exit; }
+
+        $booking = Booking::getDetail($id);
+        $logs = Booking::getLogs($id);
+        
+        //  Lấy danh sách khách hàng từ bảng mới
+        $guests = BookingGuest::getByBookingId($id);
+        // Lấy danh sách dịch vụ từ DB
+        $services = BookingService::getByBookingId($id);
+
+        if (!$booking) { echo "Booking không tồn tại!"; return; }
+
+        $title = "Chi tiết Booking #" . $booking['id'];
+        
+        
+        ob_start();
+        require_once './views/bookings/show.php';
+        $content = ob_get_clean();
+        require_once './views/layouts/AdminLayout.php';
+    }
+
+
+    //thêm khách
+    public function addGuest()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $booking_id = $_POST['booking_id'];
+            $data = [
+                ':booking_id' => $booking_id,
+                ':full_name'  => $_POST['full_name'],
+                ':gender'     => $_POST['gender'],
+                ':birthdate'  => !empty($_POST['birthdate']) ? $_POST['birthdate'] : null,
+                ':phone'      => $_POST['phone'],
+                ':note'       => $_POST['note'],
+                ':room_name'  => 'Chưa xếp' // Mặc định
+            ];
+
+            BookingGuest::add($data);
+            header("Location: index.php?act=booking-show&id=" . $booking_id);
+            exit;
+        }
+    }
+
+    // xóa khách
+    public function deleteGuest()
+    {
+        $guest_id = $_GET['guest_id'] ?? null;
+        $booking_id = $_GET['booking_id'] ?? null;
+
+        if ($guest_id && $booking_id) {
+            BookingGuest::delete($guest_id);
+            header("Location: index.php?act=booking-show&id=" . $booking_id);
+            exit;
+        }
+    }
+
+    // Xử lý lưu phân phòng 
+    public function updateRooms()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $booking_id = $_POST['booking_id'];
+            $rooms = $_POST['rooms'] ?? []; 
+
+            foreach ($rooms as $guest_id => $room_name) {
+                BookingGuest::updateRoom($guest_id, $room_name);
+            }
+
+            header("Location: index.php?act=booking-show&id=" . $booking_id);
+            exit;
+        }
+    }
+    
+ /// xử lí lấy dữ liệu lịch trình khi tạo booking
+public function ajaxCheckin()
+{
+    // Set header JSON để JS nhận diện đúng
+    header('Content-Type: application/json');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $guest_id = $_POST['guest_id'] ?? 0;
+        $status = $_POST['status'] ?? 0;
+        
+        if ($guest_id) {
+            $checkin_at = ($status == 1) ? date('Y-m-d H:i:s') : NULL;
+            
+            // Gọi Model cập nhật DB 
+            $pdo = getDB(); 
+            
+            // Cập nhật trạng thái
+            $sql = "UPDATE booking_guests SET is_checkin = :status, checkin_at = :at WHERE id = :id";
+            $stmt = $pdo->prepare($sql);
+            $result = $stmt->execute([
+                ':status' => $status,
+                ':at' => $status == 1 ? $checkin_at : null,
+                ':id' => $guest_id
+            ]);
+
+            if ($result) {
+                echo json_encode(['success' => true, 'message' => 'Cập nhật thành công']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Lỗi SQL']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Thiếu ID khách']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    }
+    exit; 
+}
+
+  // API trả về thông tin Tour 
+    public function getTourInfo()
+    {
+        // Xóa bộ nhớ đệm output để đảm bảo JSON sạch
+        if (ob_get_length()) ob_clean(); 
+        
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $tourId = $_POST['tour_id'] ?? null;
+
+            if ($tourId) {
+                // Gọi hàm bên Model 
+                $tour = Booking::getTourById($tourId);
+
+                if ($tour) {
+                    echo json_encode(['status' => 'success', 'data' => $tour]);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy Tour']);
+                }
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Thiếu ID Tour']);
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+        }
+        exit; 
+    }
+    //  Xử lý cập nhật nhật ký từ trang Show
+    public function updateDiary()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['booking_id'] ?? null;
+            $content = $_POST['diary_content'] ?? '';
+
+            if ($id) {
+                
+                $jsonContent = json_encode($content, JSON_UNESCAPED_UNICODE);
+
+                Booking::updateDiaryData($id, $jsonContent);
+
+                
+                header("Location: index.php?act=booking-show&id=" . $id);
+                exit;
+            }
+        }
+        
+        header("Location: index.php?act=bookings");
+    }
+    // [MỚI] Cập nhật Lịch trình
+    public function updateSchedule()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['booking_id'] ?? null;
+            $content = $_POST['schedule_content'] ?? '';
+
+            if ($id) {
+                // Encode JSON để lưu trữ thống nhất
+                $jsonContent = json_encode($content, JSON_UNESCAPED_UNICODE);
+                Booking::updateScheduleData($id, $jsonContent);
+                header("Location: index.php?act=booking-show&id=" . $id);
+                exit;
+            }
+        }
+        header("Location: index.php?act=bookings");
+    }
+
+    // [MỚI] Cập nhật Dịch vụ
+    public function updateService()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['booking_id'] ?? null;
+            $content = $_POST['service_content'] ?? '';
+
+            if ($id) {
+                $jsonContent = json_encode($content, JSON_UNESCAPED_UNICODE);
+                Booking::updateServiceData($id, $jsonContent);
+                header("Location: index.php?act=booking-show&id=" . $id);
+                exit;
+            }
+        }
+        header("Location: index.php?act=bookings");
     }
 }

@@ -19,15 +19,14 @@
             <tr>
                 <th>ID</th>
                 <th>Tour</th>
-                <th>Created By</th>
-                <th>Guide</th>
-                <th>Status</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Notes</th>
-                <th>Created At</th>
-                <th>Updated At</th>
-                <th>action</th>
+                <th>Người tạo</th>
+                <th>Hướng dẫn viên</th>
+                <th>Ngày đi</th>
+                <th>Ngày về</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo đơn </th>
+                
+                <th>Hành động</th>
             </tr>
         </thead>
 
@@ -37,7 +36,7 @@
                     <tr>
                         <td><?= htmlspecialchars($bk['id']) ?></td>
                         <td><?= htmlspecialchars($bk['tour_name'] ?? 'N/A') ?></td>
-                        <td><?= htmlspecialchars($bk['created_name'] ?? 'N/A') ?></td>
+                        <td><?= htmlspecialchars($bk['creator_name'] ?? $bk['created_by'] ?? 'Chưa xác định') ?></td>
                         
                         <td>
                             <?php if (!empty($bk['guide_name'])): ?>
@@ -47,13 +46,7 @@
                             <?php endif; ?>
                         </td>
 
-                        <td>
-                            <?php if (!empty($bk['status'])): ?>
-                                <span class="badge bg-success">Đang chạy</span>
-                            <?php else: ?>
-                                <span class="badge bg-secondary">Draft</span>
-                            <?php endif; ?>
-                        </td>
+                     
 
                         <td><?= !empty($bk['start_date']) ? date('d/m/Y', strtotime($bk['start_date'])) : '-' ?></td>
                         <td><?= !empty($bk['end_date']) ? date('d/m/Y', strtotime($bk['end_date'])) : '-' ?></td>
@@ -71,12 +64,11 @@
                         </td>
 
                         <td><?= !empty($bk['created_at']) ? date('d/m/Y H:i', strtotime($bk['created_at'])) : '-' ?></td>
-                        <td><?= !empty($bk['updated_at']) ? date('d/m/Y H:i', strtotime($bk['updated_at'])) : '-' ?></td>
                         <td>
-                           <a href="<?= BASE_URL . 'booking/show/' . $bk['id'] ?>" 
-                               class="btn btn-info btn-sm">
-                             <i class="bi bi-eye"></i> Chi tiết
-                              </a>
+                           <a href="index.php?act=booking-show&id=<?= $bk['id'] ?>" 
+   class="btn btn-info btn-sm">
+    <i class="bi bi-eye"></i> Chi tiết
+</a>
 
                               <a href="index.php?act=booking-delete&id=<?= $bk['id'] ?>" 
                                 onclick="return confirm('Bạn chắc chắn muốn xóa?')" 
