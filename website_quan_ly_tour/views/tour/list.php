@@ -106,8 +106,8 @@
                 <td><?= $tour['updated_at'] ?></td>
 
                 <td>
-                    <a href="<?= BASE_URL . 'tour-edit&id=' . $tour['id'] ?>" class="btn btn-warning btn-sm">Sửa</a>
-                    <a href="<?= BASE_URL . 'tour-delete&id=' . $tour['id'] ?>" 
+                    <a href="<?= BASE_URL . 'index.php?act=tour-edit&id=' . $tour['id'] ?>" class="btn btn-warning btn-sm">Sửa</a>
+                    <a href="<?= BASE_URL . 'index.php?act=tour-delete&id=' . $tour['id'] ?>" 
                        onclick="return confirm('Bạn có chắc muốn xóa?')" 
                        class="btn btn-danger btn-sm">
                         Xóa

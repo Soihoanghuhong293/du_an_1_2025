@@ -2,7 +2,7 @@
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
   <!--begin::Sidebar Brand-->
   <div class="sidebar-brand">
-    <a href="<?= BASE_URL . 'home' ?>" class="brand-link">
+              <a href="<?= BASE_URL . 'index.php?act=home' ?>" class="brand-link">
       <img
         src="<?= asset('dist/assets/img/AdminLTELogo.png') ?>"
         alt="AdminLTE Logo"
@@ -19,7 +19,7 @@
         
         <!-- Dashboard -->
         <li class="nav-item">
-          <a href="<?= BASE_URL . 'home' ?>" class="nav-link">
+              <a href="<?= BASE_URL . 'index.php?act=home' ?>" class="nav-link">
             <i class="nav-icon bi bi-speedometer"></i>
             <p>Dashboard</p>
           </a>
@@ -38,7 +38,7 @@
           <ul class="nav nav-treeview">
             <li class="nav-item">
 
-              <a href="<?= BASE_URL . 'tour' ?>" class="nav-link">
+              <a href="<?= BASE_URL . 'index.php?act=tour' ?>" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Danh sách Tour</p>
           </a>
@@ -46,8 +46,7 @@
             </li>
             
             <li class="nav-item">
-              <a href="<?= BASE_URL . 'tour/create' ?>" class="nav-link">
-              <a href="<?= BASE_URL . 'tour-add' ?>" class="nav-link">
+              <a href="<?= BASE_URL . 'index.php?act=tour-add' ?>" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>Thêm Tour mới</p>
               </a>

@@ -24,6 +24,26 @@
         </div>
 
         <div class="mb-3">
+            <label class="form-label">Giá chi tiết</label>
+            <div class="row g-2">
+                <div class="col-sm-6">
+                    <label class="form-label small">Người lớn</label>
+                    <input type="number" class="form-control" name="prices[adult]" min="0" value="<?= htmlspecialchars($_POST['prices']['adult'] ?? '') ?>">
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label small">Trẻ em</label>
+                    <input type="number" class="form-control" name="prices[child]" min="0" value="<?= htmlspecialchars($_POST['prices']['child'] ?? '') ?>">
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Nhà cung cấp</label>
+            <input type="text" class="form-control" name="suppliers_text" placeholder="Nhập tên nhà cung cấp, phân tách bằng dấu phẩy" value="<?= htmlspecialchars($_POST['suppliers_text'] ?? '') ?>">
+            <small class="text-muted">Ví dụ: Công ty A, Công ty B — hoặc bỏ trống nếu muốn chọn theo ID (không hiện tại)</small>
+        </div>
+
+        <div class="mb-3">
             <label class="form-label">Mô Tả</label>
             <textarea class="form-control" name="mo_ta" rows="4"><?= htmlspecialchars($_POST['mo_ta'] ?? '') ?></textarea>
         </div>
