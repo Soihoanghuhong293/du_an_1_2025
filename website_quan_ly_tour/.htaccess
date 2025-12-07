@@ -2,7 +2,7 @@
 RewriteEngine On
 
 # Cập nhật nếu dự án chạy ở path khác
-RewriteBase  
+RewriteBase /du_an_1_2025/website_quan_ly_tour/
 
 # Route trang chủ
 RewriteRule ^$ index.php [L,QSA]
@@ -11,4 +11,3 @@ RewriteRule ^$ index.php [L,QSA]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.+)$ index.php?act=$1 [L,QSA]
-
