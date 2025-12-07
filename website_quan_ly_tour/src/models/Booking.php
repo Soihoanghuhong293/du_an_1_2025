@@ -159,9 +159,7 @@ class Booking
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // ============================================================
     // ⭐ CHỨC NĂNG 1: HDV xem tour được phân công
-    // ============================================================
     public static function getAssignedBookings($guideId)
     {
         $db = getDB();
@@ -177,9 +175,7 @@ class Booking
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // ============================================================
-    // ⭐ CHỨC NĂNG 2: Lấy danh sách khách trong booking
-    // ============================================================
+    //  Lấy danh sách khách trong booking
     public static function getCustomersByBooking($bookingId)
     {
         $db = getDB();
@@ -190,9 +186,7 @@ class Booking
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // ============================================================
-    // ⭐ CHỨC NĂNG 3: Lấy nhật ký từ cột `diary`
-    // ============================================================
+    //  Lấy nhật ký từ cột `diary`
     public static function getDiary($bookingId)
     {
         $db = getDB();
@@ -285,5 +279,34 @@ class Booking
         $stmt = $db->prepare("SELECT * FROM tours WHERE id = :id");
         $stmt->execute([':id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    //Cập nhật riêng cột diary
+    public static function updateDiaryData($id, $content)
+    {
+        $db = getDB();
+        $sql = "UPDATE bookings SET diary = :diary, updated_at = NOW() WHERE id = :id";
+        
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            ':diary' => $content,
+            ':id'    => $id
+        ]);
+    }
+    //  Cập nhật cột schedule_detail
+    public static function updateScheduleData($id, $content)
+    {
+        $db = getDB();
+        $sql = "UPDATE bookings SET schedule_detail = :content, updated_at = NOW() WHERE id = :id";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([':content' => $content, ':id' => $id]);
+    }
+
+    //  Cập nhật cột service_detail
+    public static function updateServiceData($id, $content)
+    {
+        $db = getDB();
+        $sql = "UPDATE bookings SET service_detail = :content, updated_at = NOW() WHERE id = :id";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([':content' => $content, ':id' => $id]);
     }
 }

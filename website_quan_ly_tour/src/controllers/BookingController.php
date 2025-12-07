@@ -278,4 +278,59 @@ public function ajaxCheckin()
         }
         exit; 
     }
+    //  Xử lý cập nhật nhật ký từ trang Show
+    public function updateDiary()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['booking_id'] ?? null;
+            $content = $_POST['diary_content'] ?? '';
+
+            if ($id) {
+                
+                $jsonContent = json_encode($content, JSON_UNESCAPED_UNICODE);
+
+                Booking::updateDiaryData($id, $jsonContent);
+
+                
+                header("Location: index.php?act=booking-show&id=" . $id);
+                exit;
+            }
+        }
+        
+        header("Location: index.php?act=bookings");
+    }
+    // [MỚI] Cập nhật Lịch trình
+    public function updateSchedule()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['booking_id'] ?? null;
+            $content = $_POST['schedule_content'] ?? '';
+
+            if ($id) {
+                // Encode JSON để lưu trữ thống nhất
+                $jsonContent = json_encode($content, JSON_UNESCAPED_UNICODE);
+                Booking::updateScheduleData($id, $jsonContent);
+                header("Location: index.php?act=booking-show&id=" . $id);
+                exit;
+            }
+        }
+        header("Location: index.php?act=bookings");
+    }
+
+    // [MỚI] Cập nhật Dịch vụ
+    public function updateService()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['booking_id'] ?? null;
+            $content = $_POST['service_content'] ?? '';
+
+            if ($id) {
+                $jsonContent = json_encode($content, JSON_UNESCAPED_UNICODE);
+                Booking::updateServiceData($id, $jsonContent);
+                header("Location: index.php?act=booking-show&id=" . $id);
+                exit;
+            }
+        }
+        header("Location: index.php?act=bookings");
+    }
 }

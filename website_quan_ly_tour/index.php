@@ -138,6 +138,9 @@ match ($act) {
 
   //  API LẤY THÔNG TIN TOUR 
     'api-get-tour-info' => $bookingController->getTourInfo(),
+    'booking-update-diary' => $bookingController->updateDiary(),
+    'booking-update-schedule' => $bookingController->updateSchedule(),
+    'booking-update-service'  => $bookingController->updateService(),
     
     default => $homeController->notFound(),
 };

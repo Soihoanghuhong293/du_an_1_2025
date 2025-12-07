@@ -59,10 +59,7 @@
           </div>
 
           <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Nhật ký tour</label>
-              <textarea name="diary" class="form-control" rows="3"></textarea>
-            </div>
+           
             
            <div class="col-md-6 mb-3">
             <label class="form-label">File đính kèm</label>

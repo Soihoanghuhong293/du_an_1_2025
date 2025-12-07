@@ -1,3 +1,19 @@
+<!-- xử lí hiển thị lịch trình  -->
+<?php
+
+function formatTextContent($text) {
+    if (empty($text)) return '';
+    
+    $decoded = json_decode($text);
+    
+    if (json_last_error() === JSON_ERROR_NONE && is_string($decoded)) {
+        return $decoded;
+    }
+    
+    return $text;
+}
+?>
+
 <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/show.css">
 
 <div class="d-flex justify-content-between align-items-center mb-4 pt-3">
@@ -35,27 +51,59 @@
             <div class="card-body">
                 <div class="tab-content pt-2">
                     <div class="tab-pane fade show active" id="schedule">
-                        <?php $schedule = json_decode($booking['schedule_detail'], true); ?>
-                        <?php if (json_last_error() === JSON_ERROR_NONE && is_array($schedule)): ?>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-borderless mb-0">
-                                    <?php foreach ($schedule as $key => $val): ?>
-                                        <tr>
-                                            <td class="text-muted w-25 ps-0 fw-bold"><?= ucfirst($key) ?>:</td>
-                                            <td class="fw-normal"><?= htmlspecialchars(is_array($val) ? json_encode($val) : $val) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </table>
-                            </div>
-                        <?php else: ?>
-                            <p class="text-muted mb-0"><?= nl2br(htmlspecialchars($booking['schedule_detail'] ?? 'Chưa cập nhật lịch trình.')) ?></p>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="tab-pane fade" id="service"><?= nl2br(htmlspecialchars($booking['service_detail'] ?? 'Chưa cập nhật dịch vụ.')) ?></div>
-                    
-                    <div class="tab-pane fade" id="diary"><?= nl2br(htmlspecialchars($booking['diary'] ?? 'Chưa có nhật ký.')) ?></div>
+    <div class="card-body p-0 pt-3">
+        <form action="index.php?act=booking-update-schedule" method="POST">
+            <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold text-secondary">Chi tiết lịch trình:</label>
+                <textarea name="schedule_content" class="form-control" rows="12" placeholder="Nhập chi tiết lịch trình..."><?= htmlspecialchars(formatTextContent($booking['schedule_detail'] ?? '')) ?></textarea>
+            </div>
 
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Lưu Lịch Trình
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+                    <div class="tab-pane fade" id="service">
+    <div class="card-body p-0 pt-3">
+        <form action="index.php?act=booking-update-service" method="POST">
+            <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold text-secondary">Chi tiết dịch vụ:</label>
+                <textarea name="service_content" class="form-control" rows="10" placeholder="Nhập chi tiết dịch vụ..."><?= htmlspecialchars(formatTextContent($booking['service_detail'] ?? '')) ?></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Lưu Dịch Vụ
+                </button>
+            </div>
+        </form>
+    </div>
+</div>                    
+                          <div class="tab-pane fade" id="diary">
+    <div class="card-body p-0 pt-3">
+        <form action="index.php?act=booking-update-diary" method="POST">
+            <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold text-secondary">Nội dung nhật ký tour:</label>
+                <textarea name="diary_content" class="form-control" rows="10" placeholder="Nhập nhật ký tour, ghi chú hành trình..."><?= htmlspecialchars(formatTextContent($booking['diary'] ?? '')) ?></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Lưu Nhật Ký
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
                     <div class="tab-pane fade" id="files">
                         <?php 
                             $files = json_decode($booking['lists_file'] ?? '[]', true); 
