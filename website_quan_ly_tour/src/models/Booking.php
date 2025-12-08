@@ -29,27 +29,28 @@ class Booking
     }
 
     // Tạo booking mới
-   public static function create($data)
+// Trong file Booking.php
+
+public static function create($data)
 {
     $db = getDB();
     $sql = "INSERT INTO bookings (
                 tour_id, created_by, assigned_guide_id, status, 
                 start_date, end_date, notes, 
                 schedule_detail, service_detail, diary, lists_file,
-                number_of_adults, number_of_children, total_price, -- CỘT MỚI
+                number_of_adults, number_of_children, total_price,
                 created_at
             )
             VALUES (
                 :tour_id, :created_by, :assigned_guide_id, :status, 
                 :start_date, :end_date, :notes, 
                 :schedule_detail, :service_detail, :diary, :lists_file,
-                :number_of_adults, :number_of_children, :total_price, -- THAM SỐ MỚI
+                :number_of_adults, :number_of_children, :total_price,
                 NOW()
             )";
 
     $stmt = $db->prepare($sql);
 
-    // Mảng tham số truyền vào execute
     $params = [
         ':tour_id'           => $data['tour_id'],
         ':created_by'        => $data['created_by'],
@@ -62,14 +63,17 @@ class Booking
         ':service_detail'    => $data['service_detail'] ?? null,
         ':diary'             => $data['diary'] ?? null,
         ':lists_file'        => $data['lists_file'] ?? null,
-        
-        // THÊM THAM SỐ
         ':number_of_adults'   => $data['number_of_adults'],
         ':number_of_children' => $data['number_of_children'],
         ':total_price'        => $data['total_price']
     ];
 
-    return $stmt->execute($params);
+    if ($stmt->execute($params)) {
+        // --- THAY ĐỔI QUAN TRỌNG: TRẢ VỀ ID VỪA TẠO ---
+        return $db->lastInsertId(); 
+    }
+    
+    return false;
 }
 
     public static function getTours()

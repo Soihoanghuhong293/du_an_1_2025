@@ -2,87 +2,8 @@
 // Start output buffering
 ob_start(); 
 ?>
+<link rel="stylesheet" href="<?= BASE_URL ?>/public/css/create.css">
 
-<style>
-    /* Card Styles */
-    .card-modern {
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        background: #fff;
-        margin-bottom: 24px;
-        transition: transform 0.2s;
-    }
-    
-    .card-header-modern {
-        background: #fff;
-        padding: 15px 20px;
-        border-bottom: 1px solid #edf2f9;
-        border-radius: 12px 12px 0 0;
-        font-weight: 700;
-        color: #2c3e50;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    /* Form Styles */
-    .form-label {
-        font-weight: 600;
-        color: #555;
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .form-control, .form-select {
-        border-radius: 8px;
-        border: 1px solid #dee2e6;
-        padding: 10px 12px;
-        font-size: 0.95rem;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: #4e73df;
-        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15);
-    }
-
-    /* Section Separators */
-    .section-divider {
-        border-top: 1px dashed #e3e6f0;
-        margin: 20px 0;
-    }
-
-    /* Price Section Specifics */
-    .price-display-box {
-        background: #f8f9fc;
-        border-radius: 10px;
-        padding: 15px;
-        border: 1px solid #e3e6f0;
-    }
-
-    .total-price-input {
-        background-color: #e8f5e9 !important; /* Light green background */
-        color: #198754;
-        font-weight: 800;
-        font-size: 1.25rem;
-        text-align: right;
-        border: 2px solid #198754;
-    }
-
-    .btn-submit {
-        padding: 12px 20px;
-        font-weight: 700;
-        font-size: 1rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
-        transition: all 0.15s ease;
-    }
-    
-    .btn-submit:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
-    }
-</style>
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -134,6 +55,46 @@ ob_start();
                         </div>
                     </div>
                 </div>
+                <div class="card card-modern">
+    <div class="card-header-modern">
+        <span><i class="bi bi-person-vcard-fill text-primary me-2"></i> Khách hàng đại diện (Trưởng đoàn)</span>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Họ và Tên <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                    <input type="text" name="customer_name" class="form-control" placeholder="Nguyễn Văn A" required>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                    <input type="text" name="customer_phone" class="form-control" placeholder="09xxxxxxxx" required>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Email / Liên hệ khác</label>
+                 <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                    <input type="text" name="customer_email" class="form-control" placeholder="email@example.com">
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                 <label class="form-label">Địa chỉ / Ghi chú khách</label>
+                 <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
+                    <input type="text" name="customer_address" class="form-control" placeholder="Hà Nội...">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <div class="card card-modern">
                     <div class="card-header-modern">
@@ -222,20 +183,9 @@ ob_start();
                                     <option value="<?= $guide['id'] ?>"><?= $guide['name'] ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <div class="mt-2 small text-muted d-flex align-items-start">
-                                <i class="bi bi-info-circle me-1 mt-1"></i>
-                                <span>Hệ thống sẽ tự động ẩn các HDV bị trùng lịch sau khi bạn chọn ngày.</span>
-                            </div>
+                            
                         </div>
                         
-                        <div class="mb-3">
-                             <label class="form-label">Trạng thái ban đầu</label>
-                             <select name="status" class="form-select bg-light">
-                                <?php foreach ($statuses as $status): ?>
-                                    <option value="<?= $status['id'] ?>" <?= $status['id'] == 1 ? 'selected' : '' ?>><?= $status['name'] ?></option>
-                                <?php endforeach; ?>
-                             </select>
-                        </div>
                     </div>
                 </div>
 

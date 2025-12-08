@@ -38,7 +38,7 @@ public function store()
         return;
     }
 
-    // 1. Helper xử lý JSON cho các trường Text (giữ nguyên của bạn)
+    // 1. Helper xử lý JSON
     $processJsonInput = function($input) {
         $input = trim($input ?? '');
         if ($input === '') return null;
@@ -48,18 +48,12 @@ public function store()
     };
 
     // =================================================================
-    // 2. XỬ LÝ FILE UPLOAD (ĐOẠN CODE MỚI THÊM)
+    // 2. XỬ LÝ FILE UPLOAD
     // =================================================================
-    $filePaths = []; // Mảng chứa tên các file upload thành công
+    $filePaths = []; 
 
     if (isset($_FILES['files']) && !empty($_FILES['files']['name'][0])) {
-        // Đường dẫn thư mục lưu (Bạn nhớ tạo thư mục này trong dự án: public/uploads/bookings hoặc tương tự)
-        // Dùng BASE_PATH nếu cần đường dẫn tuyệt đối, ví dụ:
-        // $uploadDir = BASE_PATH . '/public/uploads/bookings/'; 
-        // Ở đây mình ví dụ đường dẫn tương đối:
         $uploadDir = 'uploads/bookings/'; 
-        
-        // Tạo thư mục nếu chưa tồn tại
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -72,24 +66,21 @@ public function store()
             $error    = $_FILES['files']['error'][$i];
 
             if ($error === UPLOAD_ERR_OK) {
-                // Đổi tên file để tránh trùng: timestamp_tenfile
                 $newFileName = time() . '_' . $i . '_' . $fileName;
                 $targetPath = $uploadDir . $newFileName;
 
                 if (move_uploaded_file($tmpName, $targetPath)) {
-                    // Chỉ lưu tên file vào mảng để sau này gọi ra
                     $filePaths[] = $newFileName;
                 }
             }
         }
     }
 
-    // Chuyển mảng tên file thành JSON để lưu vào DB
     $jsonFiles = !empty($filePaths) ? json_encode($filePaths, JSON_UNESCAPED_UNICODE) : null;
+
     // =================================================================
-
-
-    // 3. Chuẩn bị dữ liệu lưu DB
+    // 3. CHUẨN BỊ DỮ LIỆU BOOKING
+    // =================================================================
     $data = [
         'tour_id'           => $_POST['tour_id'],
         'created_by'        => getCurrentUser()->id ?? 1,
@@ -105,7 +96,6 @@ public function store()
         'service_detail'    => $processJsonInput($_POST['service_detail']),
         'diary'             => $processJsonInput($_POST['diary']),
 
-        // SỬA DÒNG NÀY: Thay vì lấy từ POST, ta lấy biến $jsonFiles vừa xử lý ở trên
         'lists_file'        => $jsonFiles, 
         'number_of_adults'   => $_POST['number_of_adults'] ?? 0,
         'number_of_children' => $_POST['number_of_children'] ?? 0,
@@ -117,9 +107,39 @@ public function store()
         die("Lỗi: Ngày kết thúc không được nhỏ hơn ngày bắt đầu.");
     }
 
-    // Lưu vào DB
+    // =================================================================
+    // 4. LƯU VÀO DB VÀ THÊM KHÁCH HÀNG ĐẠI DIỆN
+    // =================================================================
     try {
-        if (Booking::create($data)) {
+        // Gọi hàm create, hàm này bên Model phải return $db->lastInsertId();
+        $newBookingId = Booking::create($data); 
+
+        if ($newBookingId) {
+            
+            // --- [MỚI] XỬ LÝ LƯU KHÁCH HÀNG ĐẠI DIỆN ---
+            if (!empty($_POST['customer_name'])) {
+                // Gom thông tin Email và Địa chỉ vào ghi chú (vì bảng khách ko có cột này)
+                $noteInfo = [];
+                if (!empty($_POST['customer_address'])) $noteInfo[] = "ĐC: " . $_POST['customer_address'];
+                if (!empty($_POST['customer_email']))   $noteInfo[] = "Email: " . $_POST['customer_email'];
+                $noteInfo[] = "(Người đặt)";
+                $finalNote = implode(' - ', $noteInfo);
+
+                $guestData = [
+                    ':booking_id' => $newBookingId,
+                    ':full_name'  => $_POST['customer_name'],
+                    ':gender'     => 'Khác', // Mặc định
+                    ':birthdate'  => null,
+                    ':phone'      => $_POST['customer_phone'] ?? '',
+                    ':note'       => $finalNote,
+                    ':room_name'  => 'Chưa xếp'
+                ];
+
+                // Lưu vào bảng booking_guests
+                BookingGuest::add($guestData);
+            }
+            // -------------------------------------------
+
             redirect("bookings");
         } else {
             die("Có lỗi xảy ra khi lưu Booking.");
@@ -127,8 +147,7 @@ public function store()
     } catch (\PDOException $e) {
         die("Lỗi Database: " . $e->getMessage());
     }
-}
-   public function delete($id)
+}   public function delete($id)
     {
         $booking = Booking::find($id);
 
