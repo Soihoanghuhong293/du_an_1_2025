@@ -70,6 +70,23 @@
           </ul>
         </li>
         <?php endif; ?>
+        <?php if (isAdmin()): ?>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-people"></i>
+            <p>Thống kê<i class="nav-arrow bi bi-chevron-right"></i></p>
+          </a>
+
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+    <a href="index.php?act=dashboard" class="nav-link">
+        <i class="nav-icon bi bi-people"></i>
+        <p>Thống kê</p>
+    </a>
+</li>
+          </ul>
+        </li>
+        <?php endif; ?>
 
         <?php if (isGuide()): ?>
         <li class="nav-item">

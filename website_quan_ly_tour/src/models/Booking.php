@@ -28,7 +28,7 @@ class Booking
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Tạo booking mới (Đã bao gồm lists_file)
+    // Tạo booking mới
     public static function create($data)
     {
         $db = getDB();
@@ -58,7 +58,7 @@ class Booking
             ':schedule_detail'   => $data['schedule_detail'] ?? null,
             ':service_detail'    => $data['service_detail'] ?? null,
             ':diary'             => $data['diary'] ?? null,
-            ':lists_file'        => $data['lists_file'] ?? null, // Cột lưu JSON file upload
+            ':lists_file'        => $data['lists_file'] ?? null
         ]);
     }
 
@@ -88,32 +88,29 @@ class Booking
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Xóa booking (Sử dụng Transaction an toàn)
+    // Xóa booking
     public static function delete($id)
     {
         $db = getDB();
         try {
             $db->beginTransaction();
 
-            // Xóa log trạng thái trước
             $db->prepare("DELETE FROM booking_status_logs WHERE booking_id = :id")
                ->execute([':id' => $id]);
 
-            // Xóa file đính kèm (Nếu muốn xóa cả file vật lý thì cần code thêm logic ở Controller trước khi xóa DB)
-            
-            // Xóa booking
             $db->prepare("DELETE FROM bookings WHERE id = :id")
                ->execute([':id' => $id]);
 
             $db->commit();
             return true;
+
         } catch (Exception $e) {
             $db->rollBack();
             return false;
         }
     }
 
-    // Lấy chi tiết Booking 
+    // Chi tiết Booking
     public static function getDetail($id)
     {
         $db = getDB();
@@ -132,12 +129,12 @@ class Booking
                 WHERE b.id = :id";
 
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
+        $stmt->execute([':id' => $id]);
+
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Lấy lịch sử thay đổi trạng thái (Booking Logs)
+    // Lịch sử trạng thái
     public static function getLogs($booking_id)
     {
         $db = getDB();
@@ -154,12 +151,12 @@ class Booking
                 ORDER BY log.changed_at DESC";
 
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':id', $booking_id);
-        $stmt->execute();
+        $stmt->execute([':id' => $booking_id]);
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // ⭐ CHỨC NĂNG 1: HDV xem tour được phân công
+    // HDV xem booking được giao
     public static function getAssignedBookings($guideId)
     {
         $db = getDB();
@@ -175,40 +172,20 @@ class Booking
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    //  Lấy danh sách khách trong booking
-    public static function getCustomersByBooking($bookingId)
-    {
-        $db = getDB();
-        $sql = "SELECT * FROM booking_customers WHERE booking_id = :bid";
-        $stmt = $db->prepare($sql);
-        $stmt->execute(['bid' => $bookingId]);
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    //  Lấy nhật ký từ cột `diary`
+    // Lấy diary
     public static function getDiary($bookingId)
     {
         $db = getDB();
         $stmt = $db->prepare("SELECT diary FROM bookings WHERE id = ?");
         $stmt->execute([$bookingId]);
-
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$row || empty($row['diary'])) {
-            return ['entries' => []];
-        }
+        if (!$row || empty($row['diary'])) return ['entries' => []];
 
         $data = json_decode($row['diary'], true);
-
-        if (!is_array($data) || !isset($data['entries'])) {
-            return ['entries' => []];
-        }
-
-        return $data;
+        return is_array($data) && isset($data['entries']) ? $data : ['entries' => []];
     }
 
-    
     public static function updateDiary($bookingId, $diary)
     {
         $db = getDB();
@@ -226,7 +203,7 @@ class Booking
         ]);
     }
 
-   
+    // Cập nhật trạng thái
     public static function updateStatus($bookingId, $newStatus, $userId, $note = null)
     {
         $db = getDB();
@@ -234,7 +211,6 @@ class Booking
         try {
             $db->beginTransaction();
 
-            // 1. Lấy trạng thái cũ
             $stmt = $db->prepare("SELECT status FROM bookings WHERE id = ?");
             $stmt->execute([$bookingId]);
             $oldStatus = $stmt->fetchColumn();
@@ -244,19 +220,13 @@ class Booking
                 return false;
             }
 
-            // 2. Cập nhật trạng thái mới
-            $stmt = $db->prepare("UPDATE bookings SET status = :status WHERE id = :id");
-            $stmt->execute([
-                ':status' => $newStatus,
-                ':id'     => $bookingId
-            ]);
+            $db->prepare("UPDATE bookings SET status = :status WHERE id = :id")
+               ->execute([':status' => $newStatus, ':id' => $bookingId]);
 
-            // 3. Lưu log lịch sử
-            $stmt = $db->prepare("
+            $db->prepare("
                 INSERT INTO booking_status_logs (booking_id, old_status, new_status, changed_by, note)
                 VALUES (:booking_id, :old_status, :new_status, :changed_by, :note)
-            ");
-            $stmt->execute([
+            ")->execute([
                 ':booking_id' => $bookingId,
                 ':old_status' => $oldStatus,
                 ':new_status' => $newStatus,
@@ -272,7 +242,8 @@ class Booking
             return false;
         }
     }
-    // Hàm lấy chi tiết 1 Tour để đổ dữ liệu sang form Booking
+
+    // Tour
     public static function getTourById($id)
     {
         $db = getDB();
@@ -280,7 +251,8 @@ class Booking
         $stmt->execute([':id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-    //Cập nhật riêng cột diary
+
+    // Update diary
     public static function updateDiaryData($id, $content)
     {
         $db = getDB();
@@ -292,7 +264,7 @@ class Booking
             ':id'    => $id
         ]);
     }
-    //  Cập nhật cột schedule_detail
+
     public static function updateScheduleData($id, $content)
     {
         $db = getDB();
@@ -301,7 +273,6 @@ class Booking
         return $stmt->execute([':content' => $content, ':id' => $id]);
     }
 
-    //  Cập nhật cột service_detail
     public static function updateServiceData($id, $content)
     {
         $db = getDB();

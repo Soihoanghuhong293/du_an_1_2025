@@ -42,6 +42,7 @@ require_once __DIR__ . '/src/controllers/CategoryController.php';
 require_once __DIR__ . '/src/controllers/UserController.php';
 require_once __DIR__ . '/src/controllers/GuideController.php';
 require_once __DIR__ . '/src/controllers/BookingServiceController.php';
+require_once __DIR__ . '/src/controllers/DashboardController.php';
 
 // Khởi tạo controller
 $homeController = new HomeController();
@@ -52,6 +53,7 @@ $categoryController = new CategoryController();
 $userController = new UserController();
 $guideController = new GuideController();
 $bookingServiceController = new BookingServiceController();
+$dashboardController = new DashboardController();
 
 // Lấy tham số act (mặc định '/')
 $act = $_GET['act'] ?? '/';
@@ -147,7 +149,7 @@ match ($act) {
     'guide-download'  => $guideController->downloadAssignment(),
     'guide-confirm'   => $guideController->confirm(),
     'guide-reject'    => $guideController->reject(),
-    
+
     // 404
     default => $homeController->notFound(),
 };
