@@ -53,7 +53,7 @@
       <?php if (isLoggedIn()): ?>
         <?php $currentUser = getCurrentUser(); ?>
         <li class="nav-item dropdown user-menu">
-          <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+          <a href="<?= BASE_URL . 'profile' ?>" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
             <img
               src="<?= asset('dist/assets/img/user2-160x160.jpg') ?>"
               class="user-image rounded-circle shadow"
@@ -80,7 +80,7 @@
             <!--end::Menu Body-->
             <!--begin::Menu Footer-->
             <li class="user-footer">
-              <a href="#" class="btn btn-default btn-flat">Tài khoản</a>
+              <a href="<?= BASE_URL . 'profile' ?>" class="btn btn-default btn-flat">Tài khoản</a>
               <a href="<?= BASE_URL . 'logout' ?>" class="btn btn-default btn-flat float-end">Đăng xuất</a>
             </li>
             <!--end::Menu Footer-->

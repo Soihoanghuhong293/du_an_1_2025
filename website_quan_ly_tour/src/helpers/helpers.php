@@ -125,7 +125,7 @@ function isGuide(): bool
 }
 
 // Yêu cầu đăng nhập: nếu chưa login thì chuyển hướng về trang login
-function requireLogin(string $redirectUrl = null): void
+function requireLogin(?string $redirectUrl = null): void
 {
     if (!isLoggedIn()) {
         $redirect = $redirectUrl ?: $_SERVER['REQUEST_URI'];

@@ -1,5 +1,5 @@
 <?php
-// ...existing code...
+
 require_once __DIR__ . '/../models/TourModel.php';
 require_once __DIR__ . '/../models/Category.php';
 
@@ -7,84 +7,88 @@ class TourController {
     private $tourModel;
 
     public function __construct() {
-        // Khởi tạo Tour Model (Không cần tham số $db)
         $this->tourModel = new Tour();
     }
 
     // =============================================================
-    // ⭐ 1. Hành động index (Hiển thị danh sách)
+    // ⭐ INDEX: Danh sách Tour
     // =============================================================
-public function index() {
-    // 1. Lấy dữ liệu từ Model
-    $tours = $this->tourModel->getAll(); 
-    
-    // 2. Chỉ gọi View và truyền data
-    // (Bỏ hết ob_start, ob_get_clean, view layout ở đây đi)
-    view('tour.list', ['tours' => $tours]);
-}
+    public function index() {
+        $tours = $this->tourModel->getAll();
 
-    // =============================================================
-    // ⭐ 2. Hành động add (Thêm tour)
-    // =============================================================
-    public function add() {
-    $errors = [];
+        ob_start();
+        view('tour.list', [
+            'tours' => $tours
+        ]);
+        $content = ob_get_clean();
 
-    // Lấy danh sách danh mục từ model
-    $categories = Category::all();
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-        $data = [
-            'ten_tour' => $_POST['ten_tour'] ?? '',
-            'mo_ta' => $_POST['mo_ta'] ?? '',
-            'gia' => $_POST['gia'] ?? 0,
-            'category_id' => $_POST['category_id'] ?? 0,
-        ];
-
-        if (empty($data['ten_tour'])) 
-            $errors[] = "Tên tour không được để trống.";
-
-        if (empty($data['gia']) || $data['gia'] <= 0)
-            $errors[] = "Giá tour không hợp lệ.";
-
-        if (empty($data['category_id']))
-            $errors[] = "Chưa chọn danh mục.";
-
-        if (empty($errors)) {
-            if ($this->tourModel->create($data)) {
-                header('Location:' . BASE_URL . 'tour');
-                exit;
-            } else {
-                $errors[] = "Thêm tour thất bại do lỗi hệ thống.";
-            }
-        }
+        view('layouts.AdminLayout', [
+            'title' => 'Danh sách Tour',
+            'content' => $content
+        ]);
     }
 
-    ob_start();
-    view('tour.add', [
-        'errors' => $errors,
-        'categories' => $categories    // <<<<<<  BẮT BUỘC CÓ !
-    ]);
-    $content = ob_get_clean();
+    // =============================================================
+    // ⭐ ADD: Thêm Tour
+    // =============================================================
+    public function add() {
+        $errors = [];
+        $categories = Category::all();
 
-    view('layouts.AdminLayout', [
-        'title' => 'Thêm Tour Mới',
-        'content' => $content
-    ]);
-}
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            $data = [
+                'ten_tour' => $_POST['ten_tour'] ?? '',
+                'mo_ta' => $_POST['mo_ta'] ?? '',
+                'gia' => $_POST['gia'] ?? 0,
+                'category_id' => $_POST['category_id'] ?? 0,
+            ];
+
+            if (empty($data['ten_tour']))
+                $errors[] = "Tên tour không được để trống.";
+
+            if ($data['gia'] <= 0)
+                $errors[] = "Giá tour không hợp lệ.";
+
+            if (empty($data['category_id']))
+                $errors[] = "Chưa chọn danh mục.";
+
+            if (empty($errors)) {
+                $this->tourModel->create($data);
+                header('Location: ' . BASE_URL . '?controller=tour');
+                exit;
+            }
+        }
+
+        ob_start();
+        view('tour.add', [
+            'errors' => $errors,
+            'categories' => $categories
+        ]);
+        $content = ob_get_clean();
+
+        view('layouts.AdminLayout', [
+            'title' => 'Thêm Tour',
+            'content' => $content
+        ]);
+    }
 
     // =============================================================
-    // ⭐ 3. Hành động edit (Sửa tour)
+    // ⭐ EDIT: Sửa Tour
     // =============================================================
-    public function edit($id) {
-        if (!$id) { header('Location: index.php?act=tour'); exit; }
+    public function edit() {
+
+        $id = $_GET['id'] ?? null;
+        if (!$id) { header('Location: ' . BASE_URL . '?controller=tour'); exit; }
 
         $tour = $this->tourModel->getById($id);
         if (!$tour) { die("Tour không tồn tại!"); }
 
         $errors = [];
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-             $data = [
+
+            $data = [
                 'ten_tour' => $_POST['ten_tour'] ?? '',
                 'mo_ta' => $_POST['mo_ta'] ?? '',
                 'gia' => $_POST['gia'] ?? 0,
@@ -92,56 +96,71 @@ public function index() {
                 'diem_den' => $_POST['diem_den'] ?? ''
             ];
 
-            if (empty($data['ten_tour'])) $errors[] = "Tên tour không được để trống.";
+            if (empty($data['ten_tour']))
+                $errors[] = "Tên tour không được để trống.";
 
             if (empty($errors)) {
-                if ($this->tourModel->update($id, $data)) {
-                    header('Location: index.php?act=tour');
-                    exit;
-                } else {
-                    $errors[] = "Cập nhật tour thất bại.";
-                }
+                $this->tourModel->update($id, $data);
+                header('Location: ' . BASE_URL . '?controller=tour');
+                exit;
             }
-            $tour = array_merge($tour, $data); 
+
+            $tour = array_merge($tour, $data);
         }
+
         ob_start();
-        // >>> changed: use view() helper and pass $tour + $errors
-        view('tour.edit', ['tour' => $tour, 'errors' => $errors]);
+        view('tour.edit', [
+            'tour' => $tour,
+            'errors' => $errors
+        ]);
         $content = ob_get_clean();
+
         view('layouts.AdminLayout', [
             'title' => 'Chỉnh sửa Tour',
             'content' => $content
         ]);
-    }   
+    }
 
     // =============================================================
-    // ⭐ 4. Hành động delete (Xóa tour)
+    // ⭐ DELETE: Xóa Tour
     // =============================================================
-    public function delete($id) {
-        if (!$id) { header('Location: index.php?act=tour'); exit; }
-
-        if ($this->tourModel->delete($id)) {
-            header('Location: index.php?act=tour');
-            exit;
-        } else {
-            die("Xóa tour thất bại!");
+    public function delete() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $this->tourModel->delete($id);
         }
+        header('Location: ' . BASE_URL . '?controller=tour');
+        exit;
     }
-    function view($path, $data = [])
-{
-    // chuyển dots → slash: 'tour.list' => 'tour/list'
-    $path = str_replace('.', '/', $path);
 
-    // tạo biến từ mảng $data
-    extract($data);
+    // =============================================================
+    // ⭐ DETAIL: Chi tiết Tour
+    // =============================================================
+   public function show() {
 
-    // đường dẫn tới thư mục views
-    $file = __DIR__ . '/../views/' . $path . '.php';
+    $id = $_GET['id'] ?? null;
 
-    if (file_exists($file)) {
-        require $file;
-    } else {
-        echo "View not found: " . $file;
+    if (!$id) {
+        header('Location: index.php?controller=tour&action=index');
+        exit;
     }
+
+    $tour = $this->tourModel->getById($id);
+
+    if (!$tour) {
+        die("Tour không tồn tại");
+    }
+
+    ob_start();
+    view('tour.detail', ['tour' => $tour]);
+    $content = ob_get_clean();
+
+    view('layouts.AdminLayout', [
+        'title' => 'Chi tiết tour',
+        'content' => $content
+    ]);
 }
+
+
 }
+

@@ -24,37 +24,112 @@
                             </div>
                         <?php endif; ?>
                         
-                        <form role="form" method="POST" action="index.php?act=tour-edit&id=<?php echo $tour['id'] ?? ''; ?>">
+                        <form role="form" method="POST" action="index.php?act=tour-edit&id=<?php echo $tour['id'] ?? ''; ?>" enctype="multipart/form-data">
                             <div class="card-body">
                                 
                                 <div class="mb-3">
                                     <label for="ten_tour" class="form-label">Tên Tour (*)</label>
                                     <input type="text" class="form-control" id="ten_tour" name="ten_tour" required
-                                           value="<?php echo htmlspecialchars($tour['ten_tour'] ?? ''); ?>">
+                                           value="<?php echo htmlspecialchars($_POST['ten_tour'] ?? $tour['name'] ?? ''); ?>">
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="diem_den" class="form-label">Điểm Đến</label>
-                                    <input type="text" class="form-control" id="diem_den" name="diem_den"
-                                           value="<?php echo htmlspecialchars($tour['diem_den'] ?? ''); ?>">
+                                    <label class="form-label">Danh Mục Tour (*)</label>
+                                    <select name="category_id" class="form-control" required>
+                                        <option value="">-- Chọn danh mục --</option>
+                                        <?php if (!empty($categories)): foreach ($categories as $cate): ?>
+                                            <option value="<?= $cate['id'] ?>" <?= (($_POST['category_id'] ?? $tour['category_id'] ?? '') == $cate['id']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($cate['name']) ?>
+                                            </option>
+                                        <?php endforeach; endif; ?>
+                                    </select>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="gia" class="form-label">Giá (VNĐ) (*)</label>
                                     <input type="number" class="form-control" id="gia" name="gia" required min="0"
-                                           value="<?php echo htmlspecialchars($tour['gia'] ?? 0); ?>">
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="ngay_khoi_hanh" class="form-label">Ngày Khởi Hành (*)</label>
-                                    <input type="date" class="form-control" id="ngay_khoi_hanh" name="ngay_khoi_hanh" required
-                                           value="<?php echo htmlspecialchars($tour['ngay_khoi_hanh'] ?? ''); ?>">
+                                           value="<?php echo htmlspecialchars($_POST['gia'] ?? $tour['price'] ?? 0); ?>">
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="mo_ta" class="form-label">Mô Tả</label>
-                                    <textarea class="form-control" id="mo_ta" name="mo_ta" rows="5"><?php echo htmlspecialchars($tour['mo_ta'] ?? ''); ?></textarea>
+                                    <textarea class="form-control" id="mo_ta" name="mo_ta" rows="5"><?php echo htmlspecialchars($_POST['mo_ta'] ?? $tour['description'] ?? ''); ?></textarea>
                                 </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Lịch trình</label>
+                                    <?php
+                                        // Pre-fill textarea with first activity if structured schedule exists
+                                        $scheduleText = '';
+                                        if (!empty($_POST['lich_trinh'])) {
+                                            $scheduleText = $_POST['lich_trinh'];
+                                        } elseif (!empty($tour['lich_trinh']['days'][0]['activities'][0])) {
+                                            $scheduleText = $tour['lich_trinh']['days'][0]['activities'][0];
+                                        }
+                                    ?>
+                                    <textarea class="form-control" name="lich_trinh" rows="4"><?php echo htmlspecialchars($scheduleText); ?></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Chính sách</label>
+                                    <?php
+                                        $policyText = '';
+                                        if (!empty($_POST['chinh_sach'])) {
+                                            $policyText = $_POST['chinh_sach'];
+                                        } elseif (!empty($tour['chinh_sach']['booking'])) {
+                                            $policyText = $tour['chinh_sach']['booking'];
+                                        }
+                                    ?>
+                                    <textarea class="form-control" name="chinh_sach" rows="4"><?php echo htmlspecialchars($policyText); ?></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Giá chi tiết</label>
+                                    <div class="row g-2">
+                                        <div class="col-sm-6">
+                                            <label class="form-label small">Người lớn</label>
+                                            <input type="number" class="form-control" name="prices[adult]" min="0" value="<?= htmlspecialchars($_POST['prices']['adult'] ?? $tour['gia_chi_tiet']['adult'] ?? '') ?>">
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="form-label small">Trẻ em</label>
+                                            <input type="number" class="form-control" name="prices[child]" min="0" value="<?= htmlspecialchars($_POST['prices']['child'] ?? $tour['gia_chi_tiet']['child'] ?? '') ?>">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Nhà cung cấp</label>
+                                    <?php
+                                        // Prefill suppliers_text: prefer POST, else use existing supplier names joined by comma
+                                        $prefSuppliersText = '';
+                                        if (!empty($_POST['suppliers_text'])) {
+                                            $prefSuppliersText = $_POST['suppliers_text'];
+                                        } elseif (!empty($tour['nha_cung_cap'])) {
+                                            $prefSuppliersText = implode(', ', $tour['nha_cung_cap']);
+                                        }
+                                    ?>
+                                    <input type="text" class="form-control" name="suppliers_text" placeholder="Nhập tên nhà cung cấp, phân tách bằng dấu phẩy" value="<?= htmlspecialchars($prefSuppliersText) ?>">
+                                    <small class="text-muted">Bạn có thể nhập nhiều nhà cung cấp, phân tách bằng dấu phẩy.</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Ảnh Tour (thêm mới)</label>
+                                    <input type="file" class="form-control" name="hinh_anh[]" accept="image/*" multiple>
+                                </div>
+
+                                <?php if (!empty($tour['hinh_anh'])): ?>
+                                    <div class="mb-3">
+                                        <label class="form-label">Ảnh hiện có</label>
+                                        <div>
+                                            <?php foreach ($tour['hinh_anh'] as $img): ?>
+                                                <div style="display:inline-block;margin:4px;">
+                                                    <img src="<?= htmlspecialchars($img) ?>" alt="img" style="max-width:120px;max-height:80px;display:block;" />
+                                                    <small class="text-muted"><?= htmlspecialchars($img) ?></small>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                                 
                                 
                             </div>

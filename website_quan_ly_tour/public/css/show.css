@@ -1,0 +1,35 @@
+
+    body { background-color: #f4f6f9; color: #495057; }
+    .card-modern { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border-radius: 12px; background: #fff; margin-bottom: 1.5rem; }
+    .card-header-modern { background-color: #fff; border-bottom: 1px solid #f0f0f0; padding: 1.25rem; border-radius: 12px 12px 0 0 !important; font-weight: 600; color: #2c3e50; display: flex; align-items: center; justify-content: space-between; }
+    .nav-tabs-modern { border-bottom: 1px solid #dee2e6; }
+    .nav-tabs-modern .nav-link { border: none; border-bottom: 2px solid transparent; color: #6c757d; font-weight: 600; padding: 1rem 1.5rem; }
+    .nav-tabs-modern .nav-link.active { color: #0d6efd; border-bottom: 2px solid #0d6efd; background: transparent; }
+    .info-label { color: #8898aa; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 0.25rem; }
+    .info-value { font-size: 1rem; font-weight: 500; color: #32325d; margin-bottom: 1rem; }
+    .timeline-item { position: relative; padding-left: 1.5rem; border-left: 2px solid #e9ecef; padding-bottom: 1rem; }
+    .timeline-item::before { content: ''; position: absolute; left: -5px; top: 0; width: 8px; height: 8px; border-radius: 50%; background: #adb5bd; }
+    .timeline-item:first-child::before { background: #0d6efd; }
+
+    /* Style cho File Upload Item */
+    .file-card { transition: all 0.2s; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden; }
+    .file-card:hover { border-color: #0d6efd; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateY(-2px); }
+    .file-icon-box { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border-radius: 6px; }
+
+    @media print {
+        @page { margin: 20mm; size: auto; }
+        body { 
+            background: white !important; 
+            font-family: "Times New Roman", Times, serif !important;
+            color: #000 !important;
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+        }
+        .col-md-4, .d-print-none, .nav-tabs-modern, header, footer, nav, .btn { display: none !important; }
+        .col-md-8 { width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        .card-modern { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
+        .card-header-modern { display: none !important; }
+        .d-print-block { display: block !important; margin-bottom: 20px !important; }
+        input.form-control { border: none !important; background: transparent !important; padding: 0 !important; width: auto !important; font-weight: bold; color: #000; }
+        tr { page-break-inside: avoid; }
+    }
