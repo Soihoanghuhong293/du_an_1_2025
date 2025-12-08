@@ -29,38 +29,48 @@ class Booking
     }
 
     // Tạo booking mới
-    public static function create($data)
-    {
-        $db = getDB();
-        $sql = "INSERT INTO bookings (
-                    tour_id, created_by, assigned_guide_id, status, 
-                    start_date, end_date, notes, 
-                    schedule_detail, service_detail, diary, lists_file, 
-                    created_at
-                )
-                VALUES (
-                    :tour_id, :created_by, :assigned_guide_id, :status, 
-                    :start_date, :end_date, :notes, 
-                    :schedule_detail, :service_detail, :diary, :lists_file, 
-                    NOW()
-                )";
+   public static function create($data)
+{
+    $db = getDB();
+    $sql = "INSERT INTO bookings (
+                tour_id, created_by, assigned_guide_id, status, 
+                start_date, end_date, notes, 
+                schedule_detail, service_detail, diary, lists_file,
+                number_of_adults, number_of_children, total_price, -- CỘT MỚI
+                created_at
+            )
+            VALUES (
+                :tour_id, :created_by, :assigned_guide_id, :status, 
+                :start_date, :end_date, :notes, 
+                :schedule_detail, :service_detail, :diary, :lists_file,
+                :number_of_adults, :number_of_children, :total_price, -- THAM SỐ MỚI
+                NOW()
+            )";
 
-        $stmt = $db->prepare($sql);
+    $stmt = $db->prepare($sql);
 
-        return $stmt->execute([
-            ':tour_id'           => $data['tour_id'],
-            ':created_by'        => $data['created_by'],
-            ':assigned_guide_id' => $data['assigned_guide_id'],
-            ':status'            => $data['status'],
-            ':start_date'        => $data['start_date'],
-            ':end_date'          => $data['end_date'],
-            ':notes'             => $data['notes'],
-            ':schedule_detail'   => $data['schedule_detail'] ?? null,
-            ':service_detail'    => $data['service_detail'] ?? null,
-            ':diary'             => $data['diary'] ?? null,
-            ':lists_file'        => $data['lists_file'] ?? null
-        ]);
-    }
+    // Mảng tham số truyền vào execute
+    $params = [
+        ':tour_id'           => $data['tour_id'],
+        ':created_by'        => $data['created_by'],
+        ':assigned_guide_id' => $data['assigned_guide_id'],
+        ':status'            => $data['status'],
+        ':start_date'        => $data['start_date'],
+        ':end_date'          => $data['end_date'],
+        ':notes'             => $data['notes'],
+        ':schedule_detail'   => $data['schedule_detail'] ?? null,
+        ':service_detail'    => $data['service_detail'] ?? null,
+        ':diary'             => $data['diary'] ?? null,
+        ':lists_file'        => $data['lists_file'] ?? null,
+        
+        // THÊM THAM SỐ
+        ':number_of_adults'   => $data['number_of_adults'],
+        ':number_of_children' => $data['number_of_children'],
+        ':total_price'        => $data['total_price']
+    ];
+
+    return $stmt->execute($params);
+}
 
     public static function getTours()
     {
@@ -298,7 +308,7 @@ public static function getAvailableGuides($startDate, $endDate)
                 SELECT assigned_guide_id 
                 FROM bookings 
                 WHERE assigned_guide_id IS NOT NULL 
-                AND status != 4 
+                AND status IN (1, 2) 
                 AND (start_date <= :end_date AND end_date >= :start_date)
             )";
 

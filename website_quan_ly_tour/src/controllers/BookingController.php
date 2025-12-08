@@ -107,6 +107,9 @@ public function store()
 
         // SỬA DÒNG NÀY: Thay vì lấy từ POST, ta lấy biến $jsonFiles vừa xử lý ở trên
         'lists_file'        => $jsonFiles, 
+        'number_of_adults'   => $_POST['number_of_adults'] ?? 0,
+        'number_of_children' => $_POST['number_of_children'] ?? 0,
+        'total_price'        => $_POST['total_price'] ?? 0,
     ];
 
     // Kiểm tra logic ngày
@@ -254,40 +257,41 @@ public function ajaxCheckin()
 }
 
   // API trả về thông tin Tour 
-  public function getTourInfo()
-    {
-        // Xóa bộ nhớ đệm output để đảm bảo JSON sạch
-        if (ob_get_length()) ob_clean(); 
-        
-        header('Content-Type: application/json');
+public function getTourInfo()
+{
+    if (ob_get_length()) ob_clean(); 
+    header('Content-Type: application/json');
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $tourId = $_POST['tour_id'] ?? null;
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $tourId = $_POST['tour_id'] ?? null;
+        if ($tourId) {
+            $tour = Booking::getTourById($tourId); 
 
-            if ($tourId) {
-                // Gọi hàm bên Model lấy toàn bộ thông tin tour
-                $tour = Booking::getTourById($tourId);
+            if ($tour) {
+                // Xử lý giá tiền
+                $prices = json_decode($tour['prices'], true) ?? [];
+                
+                $response = [
+                    'schedule' => $tour['schedule'],
+                    'days'     => $tour['duration_days'] ?? 1,
+                    
+                    // --- BỔ SUNG DÒNG NÀY ---
+                    // Lấy cột description trong bảng tours để làm chi tiết dịch vụ
+                    'description' => $tour['description'] ?? '', 
+                    // ------------------------
 
-                if ($tour) {
-                    // --- ĐOẠN CẦN THÊM ---
-                    // Map cột 'duration_days' trong Database thành key 'days' cho JS dễ dùng
-                    // Nếu trong DB chưa nhập số ngày, mặc định là 1
-                    $tour['days'] = $tour['duration_days'] ?? 1; 
-                    // ---------------------
+                    'price_adult' => $prices['adult'] ?? $tour['price'] ?? 0,
+                    'price_child' => $prices['child'] ?? 0
+                ];
 
-                    echo json_encode(['status' => 'success', 'data' => $tour]);
-                } else {
-                    echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy Tour']);
-                }
+                echo json_encode(['status' => 'success', 'data' => $response]);
             } else {
-                echo json_encode(['status' => 'error', 'message' => 'Thiếu ID Tour']);
+                echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy Tour']);
             }
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
         }
-        exit; 
     }
-    //  Xử lý cập nhật nhật ký từ trang Show
+    exit; 
+} //  Xử lý cập nhật nhật ký từ trang Show
     public function updateDiary()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
