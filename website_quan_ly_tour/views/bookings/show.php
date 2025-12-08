@@ -259,21 +259,7 @@ function formatTextContent($text) {
                     <p>HDV: <?= htmlspecialchars($booking['guide_name'] ?? 'Chưa phân công') ?></p>
                 </div>
 
-                <div class="d-flex align-items-center justify-content-between mb-3 bg-white p-3 rounded shadow-sm border d-print-none">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-circle p-2">
-                            <i class="bi bi-qr-code-scan fs-4"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0 fw-bold">Tiến độ Check-in</h6>
-                            <small class="text-muted">Đã có mặt: <strong class="text-success" id="checkin-count">0</strong> / <?= count($guests) ?> khách</small>
-                        </div>
-                    </div>
-                    <div class="progress flex-grow-1 mx-3" style="height: 10px; max-width: 200px;">
-                        <div class="progress-bar bg-success" id="checkin-progress" role="progressbar" style="width: 0%"></div>
-                    </div>
-                </div>
-
+                
                 <form action="index.php?act=guest-update-rooms" method="POST">
                     <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
 
@@ -282,7 +268,6 @@ function formatTextContent($text) {
                             <thead class="bg-light text-secondary">
                                 <tr>
                                     <th class="border-top-0 ps-3">#</th>
-                                    <th class="border-top-0 text-center" style="width: 100px;">Check-in</th>
                                     <th class="border-top-0">Họ và Tên</th>
                                     <th class="border-top-0">Thông tin</th>
                                     <th class="border-top-0" style="width: 20%">Phòng</th>
@@ -293,21 +278,10 @@ function formatTextContent($text) {
                             <tbody>
                                 <?php if (!empty($guests)): ?>
                                     <?php foreach ($guests as $index => $guest): ?>
-                                        <tr class="<?= ($guest['is_checkin'] ?? 0) == 1 ? 'table-success' : '' ?>">
+                                        <tr class="">
                                             <td class="ps-3 text-muted"><?= $index + 1 ?></td>
                                             
-                                            <td class="text-center">
-                                                <div class="form-check form-switch d-flex justify-content-center">
-                                                    <input class="form-check-input checkin-toggle" type="checkbox" role="switch" 
-                                                        id="guest_<?= $guest['id'] ?>" 
-                                                        data-id="<?= $guest['id'] ?>" 
-                                                        <?= (($guest['is_checkin'] ?? 0) == 1) ? 'checked' : '' ?>
-                                                        style="cursor: pointer; transform: scale(1.3);">
-                                                </div>
-                                                <small class="text-muted d-block mt-1 checkin-time" style="font-size: 10px;">
-                                                    <?= (($guest['is_checkin'] ?? 0) == 1 && ($guest['checkin_at'] ?? null)) ? date('H:i d/m', strtotime($guest['checkin_at'])) : '' ?>
-                                                </small>
-                                            </td>
+                                            
 
                                             <td>
                                                 <div class="fw-bold text-dark"><?= htmlspecialchars($guest['full_name']) ?></div>
