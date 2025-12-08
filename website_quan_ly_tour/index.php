@@ -31,6 +31,7 @@ require_once __DIR__ . '/src/controllers/CategoryController.php';
 require_once __DIR__ . '/src/controllers/UserController.php';
 require_once __DIR__ . '/src/controllers/GuideController.php';  // ⭐ THÊM MỚI
 require_once __DIR__ . '/src/controllers/BookingServiceController.php';
+require_once __DIR__ . '/src/controllers/DashboardController.php';
 
 
 
@@ -43,6 +44,7 @@ $categoryController = new CategoryController();
 $userController = new UserController();
 $guideController = new GuideController();  // ⭐ THÊM MỚI
 $bookingServiceController = new BookingServiceController();
+$dashboardController = new DashboardController();
 
 // Lấy tham số act (mặc định '/')
 $act = $_GET['act'] ?? '/';
@@ -137,6 +139,11 @@ match ($act) {
 'guide-reject'  => $guideController->reject(),
 'guest-ajax-checkin' => $bookingController->ajaxCheckin(),
 
+'guide-show'       => $guideController->show(),       // <-- Xem chi tiết
+    'guide-diary-save' => $guideController->saveDiary(),
+    'guide-finish'  => $guideController->finish(), 
+    
+
 
   //  API LẤY THÔNG TIN TOUR 
     'api-get-tour-info' => $bookingController->getTourInfo(),
@@ -147,6 +154,9 @@ match ($act) {
     // PHÂN BỔ DỊCH VỤ
     'booking-service-add'    => $bookingServiceController->add(),
     'booking-service-delete' => $bookingServiceController->delete(),
+
+    // thong ke
+    'dashboard' => $dashboardController->index(),
     
     default => $homeController->notFound(),
     

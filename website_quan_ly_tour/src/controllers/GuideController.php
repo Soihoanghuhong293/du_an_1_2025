@@ -185,20 +185,29 @@ class GuideController
 
     public function confirm()
     {
-        requireLogin();
-        $user = getCurrentUser();
-        if (!$user->isGuide()) die("Bạn không có quyền!");
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $bookingId = $_POST['booking_id'] ?? null;
+            
+            // Lấy ghi chú người dùng nhập. Nếu để trống thì dùng câu mặc định.
+            $userNote = trim($_POST['confirm_note'] ?? '');
+            $note = !empty($userNote) ? $userNote : 'HDV xác nhận tham gia tour';
 
-        $id = $_GET['id'] ?? null;
-        if (!$id) die("Thiếu ID booking!");
+            $userId = $_SESSION['user_id'] ?? null;
 
-        // [QUAN TRỌNG] Phải check quyền sở hữu trước khi update
-        $this->checkOwnership($id, $user->id);
+            if ($bookingId && $userId) {
+                // Gọi hàm updateStatus với ghi chú tùy chỉnh
+                $result = Booking::updateStatus($bookingId, 2, $userId, $note);
 
-        // Status 2: Đã xác nhận (Ví dụ)
-        Booking::updateStatus($id, 2, $user->id, "HDV xác nhận tham gia tour");
-
-        redirect("guide-tours");
+                if ($result) {
+                    header("Location: index.php?act=guide-show&id=" . $bookingId);
+                    exit;
+                }
+            }
+        }
+        
+        // Nếu truy cập sai cách hoặc lỗi
+        header("Location: index.php?act=guide-tours");
+        exit;
     }
 
     public function reject()
@@ -217,5 +226,69 @@ class GuideController
         Booking::updateStatus($id, 4, $user->id, "HDV từ chối tour"); 
 
         redirect("guide-tours");
+    }
+    public function show() {
+        // Kiểm tra đăng nhập (nếu cần)
+        // ... 
+
+        $id = $_GET['id'] ?? null;
+        if (!$id) { header("Location: index.php?act=guide-tours"); exit; }
+
+        $booking = Booking::getDetail($id);
+        
+        // Kiểm tra xem tour này có đúng là của HDV đang đăng nhập không
+        // $currentUserId = $_SESSION['user_id'];
+        // if ($booking['assigned_guide_id'] != $currentUserId) { die("Bạn không có quyền truy cập tour này"); }
+
+        $guests = BookingGuest::getByBookingId($id);
+        $services = BookingService::getByBookingId($id);
+
+        view('guide.show', [
+            'booking' => $booking,
+            'guests' => $guests,
+            'services' => $services,
+            'title' => 'Chi tiết Tour: ' . $booking['tour_name']
+        ]);
+    }
+
+    // [MỚI] Lưu nhật ký dành cho HDV
+    public function saveDiary() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['booking_id'];
+            $content = $_POST['diary_content'];
+            
+            // Tái sử dụng hàm cập nhật nhật ký của Booking Model
+            $jsonContent = json_encode($content, JSON_UNESCAPED_UNICODE);
+            Booking::updateDiaryData($id, $jsonContent);
+
+            header("Location: index.php?act=guide-show&id=" . $id . "#diary");
+            exit;
+        }
+    }
+    // Kết thúc tour (Finish) - Chuyển sang status 3
+    public function finish()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $bookingId = $_POST['booking_id'] ?? null;
+            
+            // Lấy ghi chú, nếu rỗng thì điền mặc định
+            $userNote = trim($_POST['finish_note'] ?? '');
+            $note = !empty($userNote) ? $userNote : 'HDV xác nhận đã hoàn tất tour';
+
+            $userId = $_SESSION['user_id'] ?? null;
+
+            if ($bookingId && $userId) {
+                // Status 3 = Hoàn tất (Dựa theo bảng tour_statuses của bạn)
+                $result = Booking::updateStatus($bookingId, 3, $userId, $note);
+
+                if ($result) {
+                    header("Location: index.php?act=guide-show&id=" . $bookingId);
+                    exit;
+                }
+            }
+        }
+        
+        header("Location: index.php?act=guide-tours");
+        exit;
     }
 }
