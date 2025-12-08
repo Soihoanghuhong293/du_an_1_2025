@@ -121,3 +121,59 @@ document.addEventListener('DOMContentLoaded', function() {
     startDateInput.addEventListener('change', checkAvailableGuides);
     endDateInput.addEventListener('change', checkAvailableGuides);
 });
+document.addEventListener('DOMContentLoaded', function() {
+    const tourSelect = document.getElementById('select_tour');
+    const startDateInput = document.querySelector('input[name="start_date"]');
+    const endDateInput = document.querySelector('input[name="end_date"]');
+    
+    // Biến lưu số ngày của tour (Mặc định 1 ngày)
+    let tourDuration = 1; 
+
+    // 1. KHI CHỌN TOUR -> Lấy số ngày từ Server
+    tourSelect.addEventListener('change', function() {
+        const tourId = this.value;
+        if (tourId) {
+            fetch('index.php?act=api-get-tour-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'tour_id=' + tourId
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    // Lưu số ngày vào biến
+                    tourDuration = parseInt(res.data.days) || 1;
+                    
+                    // Nếu người dùng đã chọn ngày đi trước đó -> Tính lại ngày về ngay lập tức
+                    if (startDateInput.value) {
+                        calculateEndDate();
+                    }
+                }
+            });
+        }
+    });
+
+    // 2. KHI CHỌN NGÀY ĐI -> Tự động tính ngày về
+    startDateInput.addEventListener('change', function() {
+        calculateEndDate();
+    });
+
+    // Hàm tính toán: Ngày về = Ngày đi + (Số ngày tour - 1)
+    function calculateEndDate() {
+        if (!startDateInput.value) return;
+
+        const start = new Date(startDateInput.value);
+        const end = new Date(start);
+
+        // Ví dụ: Đi 3 ngày. Bắt đầu mùng 1.
+        // Kết thúc = Mùng 1 + (3 - 1) = Mùng 3. (Đi 1, 2, 3)
+        end.setDate(start.getDate() + (tourDuration - 1));
+
+        // Format ra YYYY-MM-DD để gán vào input
+        const yyyy = end.getFullYear();
+        const mm = String(end.getMonth() + 1).padStart(2, '0');
+        const dd = String(end.getDate()).padStart(2, '0');
+
+        endDateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+});

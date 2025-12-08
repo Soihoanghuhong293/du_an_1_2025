@@ -254,7 +254,7 @@ public function ajaxCheckin()
 }
 
   // API trả về thông tin Tour 
-    public function getTourInfo()
+  public function getTourInfo()
     {
         // Xóa bộ nhớ đệm output để đảm bảo JSON sạch
         if (ob_get_length()) ob_clean(); 
@@ -265,10 +265,16 @@ public function ajaxCheckin()
             $tourId = $_POST['tour_id'] ?? null;
 
             if ($tourId) {
-                // Gọi hàm bên Model 
+                // Gọi hàm bên Model lấy toàn bộ thông tin tour
                 $tour = Booking::getTourById($tourId);
 
                 if ($tour) {
+                    // --- ĐOẠN CẦN THÊM ---
+                    // Map cột 'duration_days' trong Database thành key 'days' cho JS dễ dùng
+                    // Nếu trong DB chưa nhập số ngày, mặc định là 1
+                    $tour['days'] = $tour['duration_days'] ?? 1; 
+                    // ---------------------
+
                     echo json_encode(['status' => 'success', 'data' => $tour]);
                 } else {
                     echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy Tour']);
