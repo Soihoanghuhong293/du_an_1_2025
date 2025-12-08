@@ -23,7 +23,10 @@ require_once __DIR__ . '/src/helpers/database.php';
 require_once __DIR__ . '/src/models/User.php';
 require_once __DIR__ . '/src/models/TourModel.php';
 require_once __DIR__ . '/src/models/Booking.php'; 
+
 require_once __DIR__ . '/src/models/BookingService.php';
+require_once __DIR__ . '/src/models/BookingService.php';  // ⭐ THÊM MỚI
+require_once __DIR__ . '/src/models/GuideProfile.php';  // ⭐ THÊM MỚI
 
 // Controllers
 require_once __DIR__ . '/src/controllers/HomeController.php';
@@ -109,6 +112,15 @@ match ($act) {
     'users/update'       => $userController->update(),
     'users/show'         => $userController->detail(),
     'users/delete'       => $userController->delete(),
+    'users'          => $userController->index(),
+    'users/create'   => $userController->create(),
+    'users/store'    => $userController->store(),
+    'users/edit'     => $userController->edit(),
+    'users/update'   => $userController->update(),
+    'users/show'     => $userController->detail(),
+    'users/delete'   => $userController->delete(),
+    'profile'        => $userController->profile(),
+    'profile-update' => $userController->updateProfile(),
 
     // ===============================
     // ⭐ CATEGORIES
