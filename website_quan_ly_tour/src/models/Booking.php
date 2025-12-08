@@ -280,4 +280,34 @@ class Booking
         $stmt = $db->prepare($sql);
         return $stmt->execute([':content' => $content, ':id' => $id]);
     }
+    // Trong file src/models/Booking.php
+
+public static function getAvailableGuides($startDate, $endDate)
+{
+    $db = getDB();
+
+    // 1. Logic tìm HDV BẬN:
+    // - Có assigned_guide_id trong bảng bookings
+    // - Trạng thái KHÔNG PHẢI là "Hủy" (status != 4 theo bảng tour_statuses của bạn)
+    // - Thời gian bị trùng lặp
+    
+    $sql = "SELECT id, name FROM users 
+            WHERE role = 'guide' 
+            AND status = 1 -- Chỉ lấy user đang hoạt động (nếu bảng users có cột status)
+            AND id NOT IN (
+                SELECT assigned_guide_id 
+                FROM bookings 
+                WHERE assigned_guide_id IS NOT NULL 
+                AND status != 4 
+                AND (start_date <= :end_date AND end_date >= :start_date)
+            )";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute([
+        ':start_date' => $startDate,
+        ':end_date'   => $endDate
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 }

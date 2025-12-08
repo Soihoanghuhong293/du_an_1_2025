@@ -336,4 +336,30 @@ public function ajaxCheckin()
         }
         header("Location: index.php?act=bookings");
     }
+    // Trong BookingController.php
+
+public function getAvailableGuides()
+{
+    // Clear buffer để trả về JSON sạch
+    if (ob_get_length()) ob_clean(); 
+    header('Content-Type: application/json');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $startDate = $_POST['start_date'] ?? null;
+        $endDate = $_POST['end_date'] ?? null;
+
+        if ($startDate && $endDate) {
+            // Gọi Model
+            $guides = Booking::getAvailableGuides($startDate, $endDate);
+
+            echo json_encode([
+                'status' => 'success', 
+                'data' => $guides
+            ]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Thiếu ngày']);
+        }
+    }
+    exit;
+}
 }

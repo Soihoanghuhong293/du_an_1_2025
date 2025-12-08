@@ -67,3 +67,57 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.querySelector('input[name="start_date"]');
+    const endDateInput = document.querySelector('input[name="end_date"]');
+    const guideSelect = document.querySelector('select[name="guide_id"]');
+    
+    // Hàm gọi API kiểm tra HDV
+    function checkAvailableGuides() {
+        const sDate = startDateInput.value;
+        const eDate = endDateInput.value;
+
+        // Chỉ chạy khi có đủ cả ngày bắt đầu và kết thúc
+        if (!sDate || !eDate) return;
+
+        // 1. Hiển thị trạng thái đang tải
+        guideSelect.innerHTML = '<option value="">-- Đang kiểm tra lịch... --</option>';
+        guideSelect.disabled = true;
+
+        // 2. Gọi AJAX
+        fetch('index.php?act=api-get-available-guides', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `start_date=${sDate}&end_date=${eDate}`
+        })
+        .then(response => response.json())
+        .then(res => {
+            guideSelect.disabled = false;
+            guideSelect.innerHTML = '<option value="">-- Chọn HDV (Đã lọc trùng lịch) --</option>';
+            
+            if (res.status === 'success' && res.data.length > 0) {
+                // 3. Đổ dữ liệu HDV rảnh vào select
+                res.data.forEach(guide => {
+                    const option = document.createElement('option');
+                    option.value = guide.id;
+                    option.textContent = guide.name;
+                    guideSelect.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.textContent = "-- Tất cả HDV đều bận --";
+                option.disabled = true;
+                guideSelect.appendChild(option);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            guideSelect.disabled = false;
+            guideSelect.innerHTML = '<option value="">-- Lỗi kiểm tra --</option>';
+        });
+    }
+
+    // Gắn sự kiện: Khi thay đổi ngày bắt đầu hoặc ngày kết thúc thì check lại
+    startDateInput.addEventListener('change', checkAvailableGuides);
+    endDateInput.addEventListener('change', checkAvailableGuides);
+});
