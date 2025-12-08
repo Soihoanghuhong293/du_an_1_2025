@@ -146,29 +146,44 @@ class GuideController
 
     public function downloadAssignment()
     {
-        // [QUAN TRỌNG] Đã thêm kiểm tra đăng nhập và quyền hạn
         requireLogin();
         $user = getCurrentUser();
         if (!$user->isGuide()) die("Bạn không có quyền!");
-
+    
         $id = $_GET['id'] ?? null;
         if (!$id) die("Thiếu ID!");
-
-        // [QUAN TRỌNG] Kiểm tra xem file này có thuộc tour mà HDV được giao không
+    
+        // Kiểm tra quyền sở hữu
         $this->checkOwnership($id, $user->id);
-
+    
         $pdo = getDB();
-        $stmt = $pdo->prepare("SELECT assignment_file FROM bookings WHERE id = ?");
+        
+        // Lấy cột lists_file (đang dùng để lưu file upload của booking)
+        $stmt = $pdo->prepare("SELECT lists_file FROM bookings WHERE id = ?");
         $stmt->execute([$id]);
-        $file = $stmt->fetchColumn();
-
-        if (!$file) die("Không có file đính kèm!");
-
-        // Sử dụng đường dẫn tuyệt đối an toàn
-        $path = BASE_PATH . "/uploads/assignments/" . $file;
-
-        if (!file_exists($path)) die("File vật lý không tồn tại!");
-
+        $data = $stmt->fetchColumn();
+    
+        if (!$data) {
+            die("Booking này không có file đính kèm!");
+        }
+    
+        // lists_file là JSON -> giải mã về mảng
+        $files = json_decode($data, true);
+    
+        if (!is_array($files) || count($files) == 0) {
+            die("Không tìm thấy file hợp lệ!");
+        }
+    
+        // Lấy file đầu tiên (hoặc bạn có thể chọn file theo index)
+        $file = $files[0];
+    
+        // Đường dẫn file thực tế
+        $path = BASE_PATH . "/uploads/bookings/" . $file;
+    
+        if (!file_exists($path)) {
+            die("File vật lý không tồn tại!");
+        }
+    
         // Force download
         header("Content-Description: File Transfer");
         header("Content-Disposition: attachment; filename=" . basename($path));
@@ -178,12 +193,11 @@ class GuideController
         header("Cache-Control: must-revalidate");
         header("Pragma: public");
         header("Content-Length: " . filesize($path));
-        
+    
         readfile($path);
         exit;
     }
-
-    public function confirm()
+        public function confirm()
     {
         requireLogin();
         $user = getCurrentUser();
