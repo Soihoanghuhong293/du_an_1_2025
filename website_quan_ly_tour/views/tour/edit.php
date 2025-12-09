@@ -1,27 +1,106 @@
 <?php
-// 1. DATA PREPARATION (Controller passes $tour, $categories, $errors)
-$t = is_array($tour) ? $tour : [];
+// 1. DATA PREPARATION
+$t = (isset($tour) && is_array($tour)) ? $tour : [];
 
 if (empty($t)) {
     echo '<div class="alert alert-danger m-4">Không tìm thấy tour cần sửa. <a href="index.php?act=tours">Quay lại</a></div>';
     return;
 }
 
-// Helper to safely get value from array
+// --- HELPER FUNCTIONS ---
+
+// Lấy giá trị an toàn
 function val($data, $key, $default = '') {
     return isset($data[$key]) ? $data[$key] : $default;
 }
 
-// Helper to safely decode JSON for view display
+// Decode JSON an toàn (xử lý cả trường hợp decode 2 lần)
 function safeJsonView($json) {
     if (is_array($json)) return $json;
     $decoded = json_decode($json ?? '', true);
+    if (is_string($decoded)) {
+        $decoded = json_decode($decoded, true);
+    }
     return is_array($decoded) ? $decoded : [];
+}
+
+/**
+ * --- HÀM MỚI: BÓC TÁCH DỮ LIỆU ĐỂ SỬA (QUAN TRỌNG) ---
+ * Hàm này dùng logic đệ quy giống file SHOW để lấy text sạch
+ * nhưng định dạng thêm dấu gạch đầu dòng để dễ nhìn trong Textarea
+ */
+function recursiveTextForEdit($data) {
+    // 1. Nếu là chuỗi JSON, cố gắng decode sâu đến cùng
+    if (is_string($data)) {
+        $data = trim($data);
+        if ((strpos($data, '{') === 0) || (strpos($data, '[') === 0)) {
+            $decoded = json_decode($data, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return recursiveTextForEdit($decoded);
+            }
+        }
+        return $data; // Trả về chuỗi thuần
+    }
+
+    // 2. Nếu là mảng
+    if (is_array($data)) {
+        // Ưu tiên key chứa nội dung văn bản
+        if (isset($data['text'])) return recursiveTextForEdit($data['text']);
+        if (isset($data['description'])) return recursiveTextForEdit($data['description']);
+
+        $lines = [];
+
+        // Trường hợp A: Cấu trúc Lịch trình chuẩn (có 'days')
+        if (isset($data['days']) && is_array($data['days'])) {
+            foreach ($data['days'] as $i => $day) {
+                $lines[] = "Ngày " . ($i + 1) . ":"; // Tiêu đề ngày
+                
+                // Xử lý các hoạt động trong ngày
+                if (!empty($day['activities'])) {
+                    // Gọi đệ quy để lấy nội dung activities
+                    $actContent = recursiveTextForEdit($day['activities']);
+                    
+                    // Tách dòng để thêm gạch đầu dòng cho đẹp
+                    $actLines = explode("\n", $actContent);
+                    foreach ($actLines as $al) {
+                        $cleanLine = trim($al);
+                        if ($cleanLine) {
+                            // Nếu chưa có gạch đầu dòng thì thêm vào
+                            if (strpos($cleanLine, '-') !== 0 && strpos($cleanLine, '+') !== 0) {
+                                $lines[] = "- " . $cleanLine;
+                            } else {
+                                $lines[] = $cleanLine;
+                            }
+                        }
+                    }
+                }
+                $lines[] = ""; // Dòng trống ngăn cách các ngày
+            }
+            return implode("\n", $lines);
+        }
+
+        // Trường hợp B: Mảng danh sách thông thường (activities, policies)
+        foreach ($data as $item) {
+            $cleanItem = recursiveTextForEdit($item); // Đệ quy lấy text con
+            
+            // Tách dòng nếu kết quả con trả về nhiều dòng
+            $subLines = explode("\n", $cleanItem);
+            foreach ($subLines as $sl) {
+                $sl = trim($sl);
+                if (!empty($sl)) {
+                    // Thêm gạch đầu dòng nếu là list item
+                    $lines[] = (strpos($sl, '-') === 0) ? $sl : "- " . $sl;
+                }
+            }
+        }
+        return implode("\n", $lines);
+    }
+
+    return '';
 }
 
 // Extract Data from DB Row
 $id          = $t['id'];
-// Basic Fields
 $name        = val($t, 'name');
 $categoryId  = val($t, 'category_id');
 $price       = val($t, 'price', 0);
@@ -29,14 +108,20 @@ $desc        = val($t, 'description');
 $status      = val($t, 'status', 1);
 $duration    = val($t, 'duration_days', 1);
 
-// JSON Fields (Decode to Arrays)
+// JSON Fields (Decode to Arrays for Logic)
+$rawSchedule = val($t, 'schedule');
+$rawPolicies = val($t, 'policies');
 $images      = safeJsonView(val($t, 'images'));
-$schedule    = safeJsonView(val($t, 'schedule')); 
 $prices      = safeJsonView(val($t, 'prices'));   
-$policies    = safeJsonView(val($t, 'policies')); 
 $suppliers   = safeJsonView(val($t, 'suppliers'));
 
-// --- FORM VALUES (Use POST if available (validation error), else DB data) ---
+// --- FORM VALUES ---
+
+// 1. SỬ DỤNG HÀM MỚI recursiveTextForEdit ĐỂ HIỂN THỊ
+$vScheduleText = $_POST['schedule_text'] ?? recursiveTextForEdit($rawSchedule);
+$vPolicyText   = $_POST['policy_text'] ?? recursiveTextForEdit($rawPolicies);
+
+// 2. Các trường cơ bản
 $vName       = $_POST['name'] ?? $name;
 $vCat        = $_POST['category_id'] ?? $categoryId;
 $vPrice      = $_POST['price'] ?? $price;
@@ -44,19 +129,17 @@ $vDesc       = $_POST['description'] ?? $desc;
 $vDuration   = $_POST['duration_days'] ?? $duration;
 $vStatus     = $_POST['status'] ?? $status;
 
-// Complex Fields -> Convert to String for Textarea/Input
-// Schedule: Prefer 'text' key if exists, else raw JSON
-$vScheduleText = $_POST['schedule_text'] ?? ($schedule['text'] ?? json_encode($schedule['days'] ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-if($vScheduleText === '[]') $vScheduleText = ''; // Clean empty JSON
+// 3. Suppliers: Array to Comma-separated string
+$supplierString = '';
+if (is_array($suppliers)) {
+    $supplierString = implode(', ', $suppliers);
+} elseif (is_string($suppliers)) {
+    $supplierString = $suppliers;
+}
+$vSuppliers  = $_POST['suppliers_text'] ?? $supplierString;
 
-// Policies: Prefer 'text' key if exists, else raw JSON
-$vPolicyText = $_POST['policy_text'] ?? ($policies['text'] ?? $policies['booking'] ?? '');
-
-// Suppliers: Array to Comma-separated string
-$vSuppliers  = $_POST['suppliers_text'] ?? implode(', ', $suppliers);
-
-// Prices: Individual fields
-$vPriceAdult = $_POST['prices']['adult'] ?? ($prices['adult'] ?? $price); // Default to base price if empty
+// 4. Prices
+$vPriceAdult = $_POST['prices']['adult'] ?? ($prices['adult'] ?? $price);
 $vPriceChild = $_POST['prices']['child'] ?? ($prices['child'] ?? 0);
 
 ?>
@@ -128,13 +211,13 @@ $vPriceChild = $_POST['prices']['child'] ?? ($prices['child'] ?? 0);
 
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Lịch trình chi tiết</label>
-                                    <textarea class="form-control" name="schedule_text" rows="8" placeholder="Ngày 1: ... &#10;Ngày 2: ..."><?= htmlspecialchars($vScheduleText) ?></textarea>
-                                    <small class="text-muted"><i class="bi bi-info-circle"></i> Nhập nội dung chi tiết. Hệ thống sẽ tự động lưu.</small>
+                                    <textarea class="form-control" name="schedule_text" rows="12" style="font-family: monospace; font-size: 14px; line-height: 1.6;" placeholder="Ngày 1: Đón khách...&#10;- Hoạt động A&#10;- Hoạt động B&#10;&#10;Ngày 2: ..."><?= htmlspecialchars($vScheduleText) ?></textarea>
+                                    <small class="text-muted"><i class="bi bi-info-circle"></i> Nhập từng dòng. Hệ thống sẽ tự động chuyển đổi thành dữ liệu cấu trúc khi lưu.</small>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Chính sách & Điều khoản</label>
-                                    <textarea class="form-control" name="policy_text" rows="4" placeholder="Chính sách hoàn hủy, bao gồm/không bao gồm..."><?= htmlspecialchars($vPolicyText) ?></textarea>
+                                    <textarea class="form-control" name="policy_text" rows="6" placeholder="- Chính sách hoàn hủy...&#10;- Bao gồm/Không bao gồm..."><?= htmlspecialchars($vPolicyText) ?></textarea>
                                 </div>
 
                             </div>
@@ -195,34 +278,45 @@ $vPriceChild = $_POST['prices']['child'] ?? ($prices['child'] ?? 0);
                                     <input type="file" class="form-control" name="images[]" multiple accept="image/*">
                                 </div>
 
-                              <?php if (!empty($images)): ?>
-    <div class="mb-3">
-        <label class="form-label fw-bold small text-uppercase text-muted">Ảnh hiện tại</label>
-        <div class="d-flex flex-wrap gap-2 border rounded p-2 bg-white">
-            <?php foreach ($images as $key => $img): 
-                // Xử lý đường dẫn ảnh
-                $imgSrc = (strpos($img, 'uploads/') !== false) ? $img : 'public/uploads/tours/' . $img;
-            ?>
-                <div class="position-relative" style="width: 80px; height: 80px;">
-                    
-                    <input type="hidden" name="current_images[]" value="<?= htmlspecialchars($img) ?>">
-                    
-                    <img src="<?= BASE_URL . $imgSrc ?>" 
-                         class="rounded border w-100 h-100" 
-                         style="object-fit: cover;" 
-                         onerror="this.src='<?= BASE_URL ?>public/assets/img/no-image.png'">
+                                <?php if (!empty($images)): ?>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase text-muted">Ảnh hiện tại</label>
+                                        <div class="d-flex flex-wrap gap-2 border rounded p-2 bg-white">
+                                            <?php foreach ($images as $key => $img): 
+                                                // Xử lý hiển thị đường dẫn ảnh
+                                                $imgSrc = $img;
+                                                if (strpos($img, 'http') !== 0) {
+                                                    // Nếu không có http, giả định là file local
+                                                    if (strpos($img, 'uploads/') !== false) {
+                                                        $imgSrc = 'public/' . $img;
+                                                    } else {
+                                                        $imgSrc = 'public/uploads/tours/' . $img;
+                                                    }
+                                                    if (defined('BASE_URL')) $imgSrc = BASE_URL . $imgSrc;
+                                                }
+                                            ?>
+                                                <div class="position-relative" style="width: 80px; height: 80px;">
+                                                    
+                                                    <input type="hidden" name="current_images[]" value="<?= htmlspecialchars($img) ?>">
+                                                    
+                                                    <img src="<?= $imgSrc ?>" 
+                                                         class="rounded border w-100 h-100" 
+                                                         style="object-fit: cover;" 
+                                                         onerror="this.src='public/assets/img/no-image.png'">
 
-                    <button type="button" 
-                            class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center"
-                            style="width: 20px; height: 20px; border-radius: 50%; transform: translate(30%, -30%); font-size: 12px;"
-                            onclick="this.parentElement.remove()"> <i class="bi bi-x"></i>
-                    </button>
-                </div>
-            <?php endforeach; ?>
-        </div>
-        <small class="text-muted fst-italic mt-1">* Nhấn vào dấu X đỏ để xóa ảnh cũ.</small>
-    </div>
-<?php endif; ?>
+                                                    <button type="button" 
+                                                            class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center shadow-sm"
+                                                            style="width: 22px; height: 22px; border-radius: 50%; transform: translate(30%, -30%);"
+                                                            onclick="this.parentElement.remove()"
+                                                            title="Xóa ảnh này"> 
+                                                            <i class="bi bi-x" style="font-size: 16px;"></i>
+                                                    </button>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <small class="text-muted fst-italic mt-1">* Nhấn vào dấu X đỏ để xóa ảnh cũ.</small>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
 
