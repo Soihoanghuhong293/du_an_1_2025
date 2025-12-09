@@ -1,4 +1,8 @@
 <?php
+$protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+$url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+// Loại bỏ query string (?act=...) để lấy đường dẫn gốc
+$baseUrl = strtok($url, '?');
 // BẬT HIỂN THỊ LỖI (Tắt khi deploy)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -119,10 +123,13 @@ match ($act) {
     // ===============================
     // ⭐ TOUR MANAGEMENT
     // ===============================
-    'tours'              => $tourController->index(),
-    'tour-add'           => $tourController->add(),
-    'tour-edit'          => $tourController->edit($_GET['id'] ?? null),
-    'tour-delete'        => $tourController->delete($_GET['id'] ?? null),
+   'tours'       => $tourController->index(), // Main list
+    'tour'        => $tourController->index(), // Alias
+    'tour-create' => $tourController->add(),   // Changed to 'tour-create' to match Booking naming convention
+    'tour-add'    => $tourController->add(),   // Alias
+    'tour-edit'   => $tourController->edit(),
+    'tour-delete' => $tourController->delete(),
+'tour-show' => $tourController->show(),
 
     // ===============================
     // ⭐ HƯỚNG DẪN VIÊN (GUIDE PORTAL)
