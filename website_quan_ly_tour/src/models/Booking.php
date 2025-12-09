@@ -5,7 +5,8 @@ require_once __DIR__ . '/../helpers/database.php';
 class Booking
 {
     // Lấy tất cả booking
-    public static function all()
+   // Lấy tất cả booking (Fix lỗi parameter)
+    public static function all($keyword = null)
     {
         $db = getDB();
 
@@ -14,20 +15,42 @@ class Booking
                     t.name AS tour_name, 
                     u_creator.name AS creator_name, 
                     u_guide.name AS guide_name,
-                    ts.name AS status_name
+                    ts.name AS status_name,
+                    (SELECT full_name FROM booking_guests WHERE booking_id = b.id LIMIT 1) as customer_name
                 FROM bookings b
                 LEFT JOIN tours t ON b.tour_id = t.id
                 LEFT JOIN users u_creator ON b.created_by = u_creator.id
                 LEFT JOIN users u_guide ON b.assigned_guide_id = u_guide.id
                 LEFT JOIN tour_statuses ts ON b.status = ts.id
-                ORDER BY b.created_at DESC";
+                WHERE 1=1";
+
+        $params = [];
+
+        if ($keyword) {
+            // SỬA LỖI: Đặt tên tham số riêng biệt cho từng vị trí so sánh
+            $sql .= " AND (
+                t.name LIKE :kw_tour OR          
+                b.id = :id_search OR             
+                u_creator.name LIKE :kw_creator OR 
+                b.id IN (SELECT booking_id FROM booking_guests WHERE full_name LIKE :kw_guest)
+            )";
+            
+            // Bind giá trị cho từng tham số riêng biệt
+            $searchString = "%$keyword%";
+            
+            $params[':kw_tour']    = $searchString;
+            $params[':id_search']  = $keyword;
+            $params[':kw_creator'] = $searchString;
+            $params[':kw_guest']   = $searchString;
+        }
+
+        $sql .= " ORDER BY b.created_at DESC";
 
         $stmt = $db->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($params);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     // Tạo booking mới
 // Trong file Booking.php
 

@@ -2,12 +2,20 @@
 require_once BASE_PATH . '/src/models/BookingGuest.php';
 require_once BASE_PATH . '/src/models/Booking.php';
 require_once BASE_PATH . '/src/models/BookingService.php';
+
+
 class BookingController
 {
     //lits
+   // Danh sách (có tìm kiếm)
     public function index(): void
     {
-        $bookings = Booking::all();
+        // 1. Lấy từ khóa từ URL (nếu người dùng nhập vào ô tìm kiếm)
+        $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : null;
+
+        // 2. Gọi Model và truyền từ khóa vào để lọc
+        // Lưu ý: Hàm all() trong Model Booking phải được sửa để nhận tham số $keyword
+        $bookings = Booking::all($keyword);
 
         view('bookings.index', [
             'bookings' => $bookings,

@@ -178,12 +178,7 @@ if ($firstImage) {
             <a href="index.php?act=tours" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Quay lại
             </a>
-            <a href="index.php?act=tour-edit&id=<?= $id ?>" class="btn btn-warning text-white">
-                <i class="bi bi-pencil-square"></i> Sửa
-            </a>
-            <a href="index.php?act=tour-delete&id=<?= $id ?>" class="btn btn-danger" onclick="return confirm('Bạn chắc chắn muốn xóa tour này?')">
-                <i class="bi bi-trash"></i> Xóa
-            </a>
+            
         </div>
     </div>
 
