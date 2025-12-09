@@ -66,9 +66,7 @@ match ($act) {
     'home'              => $homeController->home(),
     
     'login'             => $authController->login(),
-    'register'          => $authController->register(),
     'check-login'       => $authController->checkLogin(),
-    'handle-register'   => $authController->handleRegister(),
     'logout'            => $authController->logout(),
 
     // ===============================
@@ -129,7 +127,7 @@ match ($act) {
     'tour-add'    => $tourController->add(),   // Alias
     'tour-edit'   => $tourController->edit(),
     'tour-delete' => $tourController->delete(),
-'tour-show' => $tourController->show(),
+    'tour-show' => $tourController->show(),
 
     // ===============================
     // ⭐ HƯỚNG DẪN VIÊN (GUIDE PORTAL)
@@ -139,7 +137,7 @@ match ($act) {
     'guide-show'         => $guideController->show(),
     
     'guide-diary'        => $guideController->diary(),
-    'guide-diary-save'   => $guideController->saveDiary(), // Có thể bạn dùng cái này hoặc guide-diary-store
+    'guide-diary-save'   => $guideController->saveDiary(), 
     'guide-diary-store'  => $guideController->diaryStore(),
     
     'guide-schedule'     => $guideController->schedule(),
