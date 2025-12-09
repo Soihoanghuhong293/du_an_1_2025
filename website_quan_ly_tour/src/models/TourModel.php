@@ -1,47 +1,50 @@
 <?php
 
-require_once __DIR__ . '/User.php';
-require_once __DIR__ . '/../helpers/database.php'; // Đảm bảo đường dẫn tới file kết nối DB đúng
+require_once __DIR__ . '/User.php'; // Kiểm tra lại đường dẫn này có đúng file User model không
+// require_once __DIR__ . '/../helpers/database.php'; // Đảm bảo file này tồn tại và hàm getDB() hoạt động
 
-class Tour {
+class TourModel {
 
-    /**
-     * Lưu thông báo lỗi cuối cùng để debug
-     * @var string|null
-     */
     private static $lastError = null;
 
     public function __construct() {}
 
     /**
-     * Giải mã an toàn chuỗi JSON thành mảng
+     * FIX: Nếu decode thất bại (do là text thường), trả về nguyên gốc chuỗi đó
      */
     private function safeJson($value) {
-        if (empty($value)) return [];
-        if (is_array($value)) return $value; // Nếu đã là mảng thì trả về luôn
+        if (empty($value)) return []; 
+        if (is_array($value)) return $value;
         
         $arr = json_decode($value, true);
-        return (json_last_error() === JSON_ERROR_NONE && is_array($arr)) ? $arr : [];
+        
+        // Nếu là JSON hợp lệ và là mảng
+        if (json_last_error() === JSON_ERROR_NONE && is_array($arr)) {
+            return $arr;
+        }
+        
+        // Nếu lỗi decode (tức là dữ liệu dạng text bình thường), trả về text
+        return $value;
     }
 
     /**
      * Map dữ liệu thô từ DB sang định dạng chuẩn cho View
-     * (Decode các cột JSON và map Supplier)
      */
     private function mapJsonFields($tour) {
         if (!$tour) return null;
 
-        // 1. Giải mã các trường JSON quan trọng
+        // 1. Giải mã các trường JSON (Sử dụng hàm safeJson đã sửa)
         $tour['schedule']   = $this->safeJson($tour['schedule'] ?? null);
         $tour['images']     = $this->safeJson($tour['images'] ?? null);
         $tour['prices']     = $this->safeJson($tour['prices'] ?? null);
         $tour['policies']   = $this->safeJson($tour['policies'] ?? null);
         $tour['suppliers']  = $this->safeJson($tour['suppliers'] ?? null);
 
-        // 2. Xử lý Logic Nhà cung cấp (Map ID sang Tên nếu cần)
+        // 2. Xử lý Logic Nhà cung cấp
         $supplier_ids = [];
         $supplier_names = [];
         
+        // Kiểm tra kỹ xem biến suppliers có phải mảng không trước khi foreach
         if (is_array($tour['suppliers'])) {
             foreach ($tour['suppliers'] as $s) {
                 if ($s === null || $s === '') continue;
@@ -53,33 +56,28 @@ class Tour {
             }
         }
 
-        // Tìm tên User nếu supplier lưu dưới dạng ID
+        // Tìm tên User nếu có ID
         $mappedNames = [];
         if (!empty($supplier_ids) && class_exists('User')) {
             foreach ($supplier_ids as $supId) {
-                $u = User::findById($supId);
+                $u = User::findById($supId); // Đảm bảo User Model có method này
                 if ($u) {
                     $mappedNames[] = is_object($u) ? ($u->name ?? '') : ($u['name'] ?? '');
                 }
             }
         }
 
-        // Gộp danh sách tên NCC
         $finalSupplierNames = array_values(array_filter(array_merge($mappedNames, $supplier_names)));
-
         $tour['supplier_ids'] = $supplier_ids;
         $tour['suppliers']    = $finalSupplierNames;
 
         // 3. Tương thích ngược (Backward Compatibility)
-        // Gán dữ liệu vào các key tiếng Việt để View cũ không bị lỗi
         $tour['lich_trinh']    = $tour['schedule'];
         $tour['hinh_anh']      = $tour['images'];
         $tour['gia_chi_tiet']  = $tour['prices'];
         $tour['chinh_sach']    = $tour['policies'];
         $tour['nha_cung_cap']  = $tour['suppliers'];
-        $tour['nha_cung_cap_ids'] = $tour['supplier_ids'];
         
-        // Map các cột cơ bản
         $tour['ten_tour']      = $tour['name'] ?? '';
         $tour['mo_ta']         = $tour['description'] ?? '';
         $tour['gia']           = $tour['price'] ?? 0;
@@ -91,9 +89,6 @@ class Tour {
     // CRUD OPERATIONS
     // =========================================================================
 
-    /**
-     * Lấy tất cả Tour
-     */
     public function getAll() {
         $pdo = getDB();
         try {
@@ -101,11 +96,9 @@ class Tour {
             $stmt->execute();
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Duyệt qua từng dòng để xử lý JSON
             foreach ($rows as &$tour) {
                 $tour = $this->mapJsonFields($tour);
             }
-
             return $rows;
         } catch (PDOException $e) {
             self::$lastError = $e->getMessage();
@@ -113,9 +106,6 @@ class Tour {
         }
     }
 
-    /**
-     * Lấy chi tiết Tour theo ID
-     */
     public function getById($id) {
         $pdo = getDB();
         try {
@@ -129,15 +119,11 @@ class Tour {
         }
     }
 
-    // Alias tĩnh (để hỗ trợ nếu Controller gọi Tour::find)
     public static function find($id) {
         $instance = new self();
         return $instance->getById($id);
     }
 
-    /**
-     * Tạo Tour Mới
-     */
     public function create($data) {
         $pdo = getDB();
         try {
@@ -148,10 +134,12 @@ class Tour {
 
             $stmt = $pdo->prepare($sql);
 
-            // Xử lý Lịch trình (Schedule) đảm bảo đúng cấu trúc JSON
+            // Logic xử lý JSON khi lưu (Giữ nguyên logic của bạn vì nó chuẩn hóa dữ liệu đầu vào)
             $scheduleData = $data['schedule'] ?? ($data['lich_trinh'] ?? []);
             if (!is_array($scheduleData)) {
-                 // Nếu là text, bọc vào cấu trúc chuẩn
+                 // Nếu người dùng nhập text, tự động bọc vào JSON structure chuẩn
+                 // LƯU Ý: Nếu bạn muốn lưu raw text thì bỏ đoạn if này đi và gán thẳng. 
+                 // Nhưng giữ lại như này tốt hơn cho App sau này.
                  $scheduleJson = json_encode([
                     'days' => [
                         [ 'date' => '', 'activities' => [$scheduleData] ]
@@ -161,7 +149,6 @@ class Tour {
                 $scheduleJson = json_encode($scheduleData, JSON_UNESCAPED_UNICODE);
             }
 
-            // Xử lý Chính sách (Policies)
             $policyData = $data['policies'] ?? ($data['chinh_sach'] ?? '');
             if (!is_array($policyData)) {
                 $policiesJson = json_encode(['booking' => $policyData], JSON_UNESCAPED_UNICODE);
@@ -184,14 +171,10 @@ class Tour {
             ]);
         } catch (PDOException $e) {
             self::$lastError = $e->getMessage();
-            error_log('[Tour::create] Error: ' . $e->getMessage());
             return false;
         }
     }
 
-    /**
-     * Cập nhật Tour
-     */
     public function update($id, $data) {
         $pdo = getDB();
         try {
@@ -246,14 +229,10 @@ class Tour {
             ]);
         } catch (PDOException $e) {
             self::$lastError = $e->getMessage();
-            error_log('[Tour::update] Error: ' . $e->getMessage());
             return false;
         }
     }
 
-    /**
-     * Xóa Tour
-     */
     public function delete($id) {
         $pdo = getDB();
         try {
@@ -265,17 +244,11 @@ class Tour {
         }
     }
 
-    /**
-     * Lấy ID vừa insert
-     */
     public function getLastInsertId() {
         $pdo = getDB();
         return $pdo ? $pdo->lastInsertId() : null;
     }
 
-    /**
-     * Lấy thông báo lỗi cuối cùng
-     */
     public function getLastError() {
         return self::$lastError;
     }

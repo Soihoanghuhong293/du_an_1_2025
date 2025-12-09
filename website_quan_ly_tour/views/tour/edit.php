@@ -195,22 +195,32 @@ $vPriceChild = $_POST['prices']['child'] ?? ($prices['child'] ?? 0);
                                     <input type="file" class="form-control" name="images[]" multiple accept="image/*">
                                 </div>
 
-                               <?php if (!empty($images)): ?>
+                              <?php if (!empty($images)): ?>
     <div class="mb-3">
         <label class="form-label fw-bold small text-uppercase text-muted">Ảnh hiện tại</label>
         <div class="d-flex flex-wrap gap-2 border rounded p-2 bg-white">
-            <?php foreach ($images as $img): 
-                // Xử lý đường dẫn ảnh (Giống trang list)
+            <?php foreach ($images as $key => $img): 
+                // Xử lý đường dẫn ảnh
                 $imgSrc = (strpos($img, 'uploads/') !== false) ? $img : 'public/uploads/tours/' . $img;
             ?>
-                <div class="position-relative">
+                <div class="position-relative" style="width: 80px; height: 80px;">
+                    
+                    <input type="hidden" name="current_images[]" value="<?= htmlspecialchars($img) ?>">
+                    
                     <img src="<?= BASE_URL . $imgSrc ?>" 
-                         class="rounded border" 
-                         style="width: 70px; height: 70px; object-fit: cover;" 
+                         class="rounded border w-100 h-100" 
+                         style="object-fit: cover;" 
                          onerror="this.src='<?= BASE_URL ?>public/assets/img/no-image.png'">
+
+                    <button type="button" 
+                            class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center"
+                            style="width: 20px; height: 20px; border-radius: 50%; transform: translate(30%, -30%); font-size: 12px;"
+                            onclick="this.parentElement.remove()"> <i class="bi bi-x"></i>
+                    </button>
                 </div>
             <?php endforeach; ?>
         </div>
+        <small class="text-muted fst-italic mt-1">* Nhấn vào dấu X đỏ để xóa ảnh cũ.</small>
     </div>
 <?php endif; ?>
                             </div>

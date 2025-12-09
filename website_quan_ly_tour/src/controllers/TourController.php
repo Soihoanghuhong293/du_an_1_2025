@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../models/TourModel.php';
 require_once __DIR__ . '/../models/Category.php';
 
@@ -7,15 +6,16 @@ class TourController {
     private $tourModel;
 
     public function __construct() {
-        // Khởi tạo Model (Bắt buộc vì Model hiện tại là dạng Instance, không phải Static)
-        $this->tourModel = new Tour();
+        // Khởi tạo Model
+        // Lưu ý: Đảm bảo class trong file TourModel.php tên là 'TourModel'
+        // Nếu class tên là 'Tour', hãy sửa thành new Tour();
+        $this->tourModel = new TourModel(); 
     }
 
     // =============================================================
     // ⭐ 1. INDEX: Danh sách Tour
     // =============================================================
     public function index() {
-        // SỬA: Gọi qua $this->tourModel thay vì Tour::getAll()
         $tours = $this->tourModel->getAll(); 
         
         ob_start();
@@ -77,12 +77,11 @@ class TourController {
             ];
 
             if (empty($errors)) {
-                // SỬA: Gọi qua $this->tourModel
                 if ($this->tourModel->create($data)) {
                     header('Location: index.php?act=tours');
                     exit;
                 } else {
-                    $errors[] = "Thêm tour thất bại. Lỗi: " . ($this->tourModel->getLastError() ?? 'Unknown');
+                    $errors[] = "Thêm tour thất bại. Lỗi hệ thống.";
                 }
             }
         }
@@ -101,13 +100,12 @@ class TourController {
     }
 
     // =============================================================
-    // ⭐ 3. EDIT: Sửa Tour
+    // ⭐ 3. EDIT: Sửa Tour (ĐÃ SỬA LOGIC ẢNH)
     // =============================================================
     public function edit() {
         $id = $_GET['id'] ?? null;
         if (!$id) { header('Location: index.php?act=tours'); exit; }
 
-        // SỬA: Gọi qua $this->tourModel
         $tour = $this->tourModel->getById($id);
         $categories = Category::all();
 
@@ -120,7 +118,7 @@ class TourController {
             $name = $_POST['name'] ?? '';
             if (empty($name)) $errors[] = "Tên tour không được để trống.";
 
-            // Xử lý JSON
+            // Xử lý JSON các trường thông tin
             $pricesJson = json_encode([
                 'adult' => $_POST['prices']['adult'] ?? 0,
                 'child' => $_POST['prices']['child'] ?? 0
@@ -130,13 +128,22 @@ class TourController {
             $scheduleJson = $this->ensureJson($_POST['schedule_text'] ?? '');
             $policiesJson = $this->ensureJson($_POST['policy_text'] ?? '');
 
-            // Xử lý Ảnh: Giữ ảnh cũ + Thêm ảnh mới
-            $oldImages = $tour['images']; 
-            if (!is_array($oldImages)) $oldImages = [];
+            // ==================================================
+            // 🔥 FIX QUAN TRỌNG: LOGIC CẬP NHẬT ẢNH
+            // ==================================================
             
+            // 1. Lấy danh sách ảnh cũ mà người dùng MUỐN GIỮ LẠI (từ input hidden)
+            // Nếu người dùng xóa hết ảnh cũ, mảng này sẽ rỗng.
+            $keepImages = $_POST['current_images'] ?? []; 
+            
+            // 2. Upload ảnh mới (nếu có)
             $newImages = $this->handleImageUpload();
-            $finalImages = array_merge($oldImages, $newImages);
+
+            // 3. Gộp ảnh cũ (đã lọc) và ảnh mới
+            $finalImages = array_merge($keepImages, $newImages);
             $imagesJson = json_encode($finalImages, JSON_UNESCAPED_UNICODE);
+            
+            // ==================================================
 
             $data = [
                 'name'          => $name,
@@ -153,7 +160,6 @@ class TourController {
             ];
 
             if (empty($errors)) {
-                // SỬA: Gọi qua $this->tourModel->update (Hàm trong Model tên là update, không phải updateById)
                 if ($this->tourModel->update($id, $data)) {
                     header('Location: index.php?act=tours');
                     exit;
@@ -161,6 +167,7 @@ class TourController {
                     $errors[] = "Cập nhật thất bại.";
                 }
             }
+            // Nếu có lỗi, cập nhật lại biến $tour để hiển thị lại form với dữ liệu vừa nhập
             $tour = array_merge($tour, $data); 
         }
 
@@ -185,7 +192,6 @@ class TourController {
         $id = $_GET['id'] ?? null;
         if (!$id) { header('Location: index.php?act=tours'); exit; }
 
-        // SỬA: Gọi qua $this->tourModel
         if ($this->tourModel->delete($id)) {
             header('Location: index.php?act=tours');
             exit;
@@ -201,7 +207,6 @@ class TourController {
         $id = $_GET['id'] ?? null;
         if (!$id) { header('Location: index.php?act=tours'); exit; }
 
-        // SỬA: Gọi qua $this->tourModel
         $tour = $this->tourModel->getById($id);
 
         if (!$tour) { die("Tour không tồn tại"); }
@@ -223,8 +228,10 @@ class TourController {
     private function ensureJson($text) {
         $text = trim($text);
         if ($text === '') return json_encode([], JSON_UNESCAPED_UNICODE);
+        // Kiểm tra xem chuỗi nhập vào có phải là JSON hợp lệ không
         json_decode($text);
         if (json_last_error() === JSON_ERROR_NONE) return $text;
+        // Nếu không phải JSON, gói nó vào object text (để tránh lỗi frontend parse)
         return json_encode(['text' => $text], JSON_UNESCAPED_UNICODE);
     }
 
@@ -238,15 +245,11 @@ class TourController {
 
         if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
             
-            // 1. Xác định đường dẫn thư mục 'public/uploads/tours'
-            // __DIR__ là src/controllers
-            // Đi lùi ra ngoài: src/controllers -> src -> root -> public -> uploads -> tours
+            // Đường dẫn upload (Cần chắc chắn thư mục này tồn tại và có quyền ghi)
             $uploadDir = dirname(__DIR__, 2) . '/public/uploads/tours/';
             
-            // 2. Tạo thư mục nếu chưa có
             if (!is_dir($uploadDir)) {
                 if (!mkdir($uploadDir, 0777, true)) {
-                    // Nếu không tạo được thư mục, log lỗi hoặc return rỗng
                     error_log("Không thể tạo thư mục upload: " . $uploadDir);
                     return [];
                 }
@@ -257,15 +260,13 @@ class TourController {
                 if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
                     
                     $ext = pathinfo($_FILES['images']['name'][$i], PATHINFO_EXTENSION);
-                    // Tạo tên file duy nhất để tránh trùng
+                    // Tạo tên file ngẫu nhiên để tránh trùng lặp
                     $uniqueName = time() . '_' . uniqid() . '.' . $ext;
                     
                     $targetPath = $uploadDir . $uniqueName;
 
-                    // Di chuyển file từ temp sang thư mục upload
                     if (move_uploaded_file($_FILES['images']['tmp_name'][$i], $targetPath)) {
                         // CHỈ LƯU TÊN FILE VÀO DATABASE
-                        // View sẽ tự thêm đường dẫn 'uploads/tours/'
                         $images[] = $uniqueName; 
                     }
                 }
