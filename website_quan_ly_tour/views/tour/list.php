@@ -1,136 +1,131 @@
+<?php ob_start(); ?>
+
+<link rel="stylesheet" href="<?= BASE_URL ?>/public/css/index.css">
 
 <div class="row">
-  <div class="col-12">
-    <!-- Card Danh mục -->
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Danh sách Tours</h3>
-        <div class="card-tools">
-          <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-            <i class="bi bi-dash-lg"></i>
-          </button>
+    <div class="col-12">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="mb-1 fw-bold text-dark">Quản lý Tours</h3>
+                <p class="text-muted mb-0">Danh sách các tour du lịch</p>
+            </div>
+            <div>
+                <a href="index.php?act=tour-add" class="btn btn-primary px-4 rounded-pill shadow-sm fw-bold">
+                    <i class="bi bi-plus-lg me-2"></i> Thêm Tour Mới
+                </a>
+            </div>
         </div>
-      </div>
-<div class="card-body">
 
-    <table class="table table-bordered table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>ID</th>
-                <th>Tên Tour</th>
-                <th>Mô tả</th>
-                <th>Danh mục</th>
-                <th>Lịch trình</th>
-                <th>Hình ảnh</th>
-                <th>Giá chi tiết</th>
-                <th>Chính sách</th>
-                <th>Nhà cung cấp</th>
-                <th>Giá</th>
-                <th>Trạng thái</th>
-                <th>Ngày tạo</th>
-                <th>Ngày cập nhật</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
+        <!-- Card -->
+        <div class="card card-modern">
 
-        <tbody>
-        <?php foreach ($tours as $tour): ?>
+            <!-- Card Header -->
+            <div class="card-header-modern d-flex justify-content-between align-items-center">
+                
+            <form method="GET" action="index.php" class="d-flex align-items-center gap-2 mb-3">
+            <form method="GET" action="index.php" class="d-flex align-items-center gap-2 mb-3">
+                <input type="hidden" name="act" value="tours">
 
-            <?php
-                $schedule  = $tour['lich_trinh'] ?? [];
-                $images    = $tour['hinh_anh'] ?? [];
-                $prices    = $tour['gia_chi_tiet'] ?? [];
-                $policies  = $tour['chinh_sach'] ?? [];
-                $suppliers = $tour['nha_cung_cap'] ?? [];
-            ?>
+                <input type="text" name="search" class="form-control" placeholder="Tìm kiếm tour..." 
+                    value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
 
-            <tr>
-                <td><?= $tour['id'] ?></td>
-                <td><?= htmlspecialchars($tour['name']) ?></td>
-                <td><?= htmlspecialchars($tour['description']) ?></td>
-                <td><?= $tour['category_id'] ?></td>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel"></i> Tìm kiếm
+                </button>
 
-                <!-- Lịch trình -->
-                <td>
-                    <?php if (!empty($schedule['days'])): ?>
-                        <?php foreach ($schedule['days'] as $day): ?>
-                            <strong>Ngày:</strong> <?= htmlspecialchars($day['date']) ?><br>
-                            <strong>Hoạt động:</strong>
-                            <ul>
-                                <?php foreach ($day['activities'] as $act): ?>
-                                    <li><?= htmlspecialchars($act) ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <em>Không có dữ liệu</em>
-                    <?php endif; ?>
-                </td>
+                <?php if (!empty($_GET['search'])): ?>
+                    <!-- Nút chỉ hiện khi có từ khóa tìm kiếm -->
+                    <a href="index.php?act=tours" class="btn btn-secondary">Hiển thị tất cả</a>
+                <?php endif; ?>
+            </form>
+                <div>
+                    <button class="btn btn-light btn-sm text-muted"><i class="bi bi-download"></i> Xuất Excel</button>
+                </div>
+            </div>
 
-                <!-- Hình ảnh -->
-                <td>
-                    <?php if (!empty($images)): ?>
-                        <?php foreach ($images as $img): ?>
-                            <span class="badge bg-info text-dark"><?= htmlspecialchars($img) ?></span><br>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <em>Không có ảnh</em>
-                    <?php endif; ?>
-                </td>
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table table-modern mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Tên tour</th>
+                            <th>Danh mục</th>
+                            <th>Ảnh</th>
+                            <th>Giá</th>
+                            <th class="text-center">Trạng thái</th>
+                            <th class="text-end pe-4">Hành động</th>
+                        </tr>
+                    </thead>
 
-                <!-- Giá chi tiết -->
-                <td>
-                    Người lớn: <strong><?= number_format($prices['adult'] ?? 0) ?> VNĐ</strong><br>
-                    Trẻ em: <strong><?= number_format($prices['child'] ?? 0) ?> VNĐ</strong>
-                </td>
+                    <tbody>
+                        <?php if (!empty($tours)): ?>
+                            <?php foreach ($tours as $tour): ?>
+                                <?php 
+                                    $images = $tour['images'] ?? [];
+                                    $thumb = !empty($images) ? $images[0] : null;
+                                ?>
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark"><?= htmlspecialchars($tour['name']) ?></div>
+                                        <div class="text-muted small">#<?= $tour['id'] ?></div>
+                                    </td>
 
-                <!-- Chính sách -->
-                <td>
-                    <?= htmlspecialchars($policies['booking'] ?? 'Không có chính sách') ?>
-                </td>
+                                    <td><?= htmlspecialchars($tour['category_id']) ?></td>
 
-                <!-- Nhà cung cấp -->
-                <td>
-                    <?php if (!empty($suppliers)): ?>
-                        <?php foreach ($suppliers as $s): ?>
-                            <span class="badge bg-secondary"><?= htmlspecialchars($s) ?></span><br>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <em>Không có NCC</em>
-                    <?php endif; ?>
-                </td>
+                                    <td>
+                                        <?php if ($thumb): ?>
+                                            <img src="<?= BASE_URL ?>/public/dist/assets/img/<?= htmlspecialchars($thumb) ?>" 
+                                                width="60" height="60" 
+                                                class="rounded shadow-sm object-fit-cover">
+                                        <?php else: ?>
+                                            <span class="text-muted fst-italic">Không có ảnh</span>
+                                        <?php endif; ?>
+                                    </td>
 
-                <td><?= number_format($tour['price']) ?> VNĐ</td>
-                <td><?= $tour['status'] ?></td>
-                <td><?= $tour['created_at'] ?></td>
-                <td><?= $tour['updated_at'] ?></td>
+                                    <td class="fw-bold"><?= number_format($tour['price']) ?> VNĐ</td>
 
-                <td>
-                    <a href="<?= BASE_URL . 'tour-edit&id=' . $tour['id'] ?>" class="btn btn-warning btn-sm">Sửa</a>
-                    <a href="<?= BASE_URL . 'tour-delete&id=' . $tour['id'] ?>" 
-                       onclick="return confirm('Bạn có chắc muốn xóa?')" 
-                       class="btn btn-danger btn-sm">
-                        Xóa
-                    </a>
-                </td>
-            </tr>
+                                    <td class="text-center">
+                                        <?php 
+                                            $statusLabel = $tour['status'] ? "Hiển thị" : "Ẩn";
+                                            $statusClass = $tour['status'] ? "badge-soft-success" : "badge-soft-secondary";
+                                        ?>
+                                        <span class="badge badge-soft <?= $statusClass ?>"><?= $statusLabel ?></span>
+                                    </td>
 
-        <?php endforeach; ?>
-        </tbody>
-    </table>
+                                    <td class="text-end pe-4">
+                                        <a href="index.php?act=tour-detail&id=<?= $tour['id'] ?>" class="btn-icon btn-icon-view me-1" title="Chi tiết">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </a>
+
+                                        <a href="index.php?act=tour-edit&id=<?= $tour['id'] ?>" class="btn-icon btn-icon-edit me-1" title="Sửa">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
+
+                                        <a href="index.php?act=tour-delete&id=<?= $tour['id'] ?>"
+                                           onclick="return confirm('Bạn có chắc muốn xóa tour này?')"
+                                           class="btn-icon btn-icon-delete" title="Xóa">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                    Chưa có tour nào.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer bg-white border-0 py-3">
+                <small class="text-muted">Hiển thị <?= count($tours) ?> tour</small>
+            </div>
+        </div>
+    </div>
 </div>
-
-<?php
-// Lấy toàn bộ nội dung vừa tạo
-$content = ob_get_clean();
-
-// Hiển thị layout Admin
-view('layouts.AdminLayout', [
-    'title' => 'tours - Website Quản Lý Tour',
-    'pageTitle' => 'Tours',
-    'content' => $content,
-    'breadcrumb' => [
-        ['label' => 'Danh mục', 'url' => BASE_URL . 'home', 'active' => true],
-    ],
-]);
-?>
