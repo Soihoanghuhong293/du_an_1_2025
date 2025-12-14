@@ -38,7 +38,7 @@ public function store()
         return;
     }
 
-    // 1. Helper xử lý JSON cho các trường Text (giữ nguyên của bạn)
+    // 1. Helper xử lý JSON
     $processJsonInput = function($input) {
         $input = trim($input ?? '');
         if ($input === '') return null;
@@ -48,18 +48,12 @@ public function store()
     };
 
     // =================================================================
-    // 2. XỬ LÝ FILE UPLOAD (ĐOẠN CODE MỚI THÊM)
+    // 2. XỬ LÝ FILE UPLOAD
     // =================================================================
-    $filePaths = []; // Mảng chứa tên các file upload thành công
+    $filePaths = []; 
 
     if (isset($_FILES['files']) && !empty($_FILES['files']['name'][0])) {
-        // Đường dẫn thư mục lưu (Bạn nhớ tạo thư mục này trong dự án: public/uploads/bookings hoặc tương tự)
-        // Dùng BASE_PATH nếu cần đường dẫn tuyệt đối, ví dụ:
-        // $uploadDir = BASE_PATH . '/public/uploads/bookings/'; 
-        // Ở đây mình ví dụ đường dẫn tương đối:
         $uploadDir = 'uploads/bookings/'; 
-        
-        // Tạo thư mục nếu chưa tồn tại
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -72,24 +66,21 @@ public function store()
             $error    = $_FILES['files']['error'][$i];
 
             if ($error === UPLOAD_ERR_OK) {
-                // Đổi tên file để tránh trùng: timestamp_tenfile
                 $newFileName = time() . '_' . $i . '_' . $fileName;
                 $targetPath = $uploadDir . $newFileName;
 
                 if (move_uploaded_file($tmpName, $targetPath)) {
-                    // Chỉ lưu tên file vào mảng để sau này gọi ra
                     $filePaths[] = $newFileName;
                 }
             }
         }
     }
 
-    // Chuyển mảng tên file thành JSON để lưu vào DB
     $jsonFiles = !empty($filePaths) ? json_encode($filePaths, JSON_UNESCAPED_UNICODE) : null;
+
     // =================================================================
-
-
-    // 3. Chuẩn bị dữ liệu lưu DB
+    // 3. CHUẨN BỊ DỮ LIỆU BOOKING
+    // =================================================================
     $data = [
         'tour_id'           => $_POST['tour_id'],
         'created_by'        => getCurrentUser()->id ?? 1,
@@ -105,8 +96,10 @@ public function store()
         'service_detail'    => $processJsonInput($_POST['service_detail']),
         'diary'             => $processJsonInput($_POST['diary']),
 
-        // SỬA DÒNG NÀY: Thay vì lấy từ POST, ta lấy biến $jsonFiles vừa xử lý ở trên
         'lists_file'        => $jsonFiles, 
+        'number_of_adults'   => $_POST['number_of_adults'] ?? 0,
+        'number_of_children' => $_POST['number_of_children'] ?? 0,
+        'total_price'        => $_POST['total_price'] ?? 0,
     ];
 
     // Kiểm tra logic ngày
@@ -114,9 +107,39 @@ public function store()
         die("Lỗi: Ngày kết thúc không được nhỏ hơn ngày bắt đầu.");
     }
 
-    // Lưu vào DB
+    // =================================================================
+    // 4. LƯU VÀO DB VÀ THÊM KHÁCH HÀNG ĐẠI DIỆN
+    // =================================================================
     try {
-        if (Booking::create($data)) {
+        // Gọi hàm create, hàm này bên Model phải return $db->lastInsertId();
+        $newBookingId = Booking::create($data); 
+
+        if ($newBookingId) {
+            
+            // --- [MỚI] XỬ LÝ LƯU KHÁCH HÀNG ĐẠI DIỆN ---
+            if (!empty($_POST['customer_name'])) {
+                // Gom thông tin Email và Địa chỉ vào ghi chú (vì bảng khách ko có cột này)
+                $noteInfo = [];
+                if (!empty($_POST['customer_address'])) $noteInfo[] = "ĐC: " . $_POST['customer_address'];
+                if (!empty($_POST['customer_email']))   $noteInfo[] = "Email: " . $_POST['customer_email'];
+                $noteInfo[] = "(Người đặt)";
+                $finalNote = implode(' - ', $noteInfo);
+
+                $guestData = [
+                    ':booking_id' => $newBookingId,
+                    ':full_name'  => $_POST['customer_name'],
+                    ':gender'     => 'Khác', // Mặc định
+                    ':birthdate'  => null,
+                    ':phone'      => $_POST['customer_phone'] ?? '',
+                    ':note'       => $finalNote,
+                    ':room_name'  => 'Chưa xếp'
+                ];
+
+                // Lưu vào bảng booking_guests
+                BookingGuest::add($guestData);
+            }
+            // -------------------------------------------
+
             redirect("bookings");
         } else {
             die("Có lỗi xảy ra khi lưu Booking.");
@@ -124,8 +147,7 @@ public function store()
     } catch (\PDOException $e) {
         die("Lỗi Database: " . $e->getMessage());
     }
-}
-   public function delete($id)
+}   public function delete($id)
     {
         $booking = Booking::find($id);
 
@@ -254,34 +276,41 @@ public function ajaxCheckin()
 }
 
   // API trả về thông tin Tour 
-    public function getTourInfo()
-    {
-        // Xóa bộ nhớ đệm output để đảm bảo JSON sạch
-        if (ob_get_length()) ob_clean(); 
-        
-        header('Content-Type: application/json');
+public function getTourInfo()
+{
+    if (ob_get_length()) ob_clean(); 
+    header('Content-Type: application/json');
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $tourId = $_POST['tour_id'] ?? null;
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $tourId = $_POST['tour_id'] ?? null;
+        if ($tourId) {
+            $tour = Booking::getTourById($tourId); 
 
-            if ($tourId) {
-                // Gọi hàm bên Model 
-                $tour = Booking::getTourById($tourId);
+            if ($tour) {
+                // Xử lý giá tiền
+                $prices = json_decode($tour['prices'], true) ?? [];
+                
+                $response = [
+                    'schedule' => $tour['schedule'],
+                    'days'     => $tour['duration_days'] ?? 1,
+                    
+                    // --- BỔ SUNG DÒNG NÀY ---
+                    // Lấy cột description trong bảng tours để làm chi tiết dịch vụ
+                    'description' => $tour['description'] ?? '', 
+                    // ------------------------
 
-                if ($tour) {
-                    echo json_encode(['status' => 'success', 'data' => $tour]);
-                } else {
-                    echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy Tour']);
-                }
+                    'price_adult' => $prices['adult'] ?? $tour['price'] ?? 0,
+                    'price_child' => $prices['child'] ?? 0
+                ];
+
+                echo json_encode(['status' => 'success', 'data' => $response]);
             } else {
-                echo json_encode(['status' => 'error', 'message' => 'Thiếu ID Tour']);
+                echo json_encode(['status' => 'error', 'message' => 'Không tìm thấy Tour']);
             }
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
         }
-        exit; 
     }
-    //  Xử lý cập nhật nhật ký từ trang Show
+    exit; 
+} //  Xử lý cập nhật nhật ký từ trang Show
     public function updateDiary()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -336,4 +365,30 @@ public function ajaxCheckin()
         }
         header("Location: index.php?act=bookings");
     }
+    // Trong BookingController.php
+
+public function getAvailableGuides()
+{
+    // Clear buffer để trả về JSON sạch
+    if (ob_get_length()) ob_clean(); 
+    header('Content-Type: application/json');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $startDate = $_POST['start_date'] ?? null;
+        $endDate = $_POST['end_date'] ?? null;
+
+        if ($startDate && $endDate) {
+            // Gọi Model
+            $guides = Booking::getAvailableGuides($startDate, $endDate);
+
+            echo json_encode([
+                'status' => 'success', 
+                'data' => $guides
+            ]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Thiếu ngày']);
+        }
+    }
+    exit;
+}
 }

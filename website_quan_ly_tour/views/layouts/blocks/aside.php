@@ -67,6 +67,7 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item"><a href="<?= url('users') ?>" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>Danh sách Người dùng</p></a></li>
+            <li class="nav-item"><a href="<?= url('guides') ?>" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>Danh sách Hướng dẫn viên</p></a></li>
           </ul>
         </li>
         <?php endif; ?>

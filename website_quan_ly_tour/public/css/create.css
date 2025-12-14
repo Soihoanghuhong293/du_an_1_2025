@@ -1,0 +1,79 @@
+
+    /* Card Styles */
+    .card-modern {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        background: #fff;
+        margin-bottom: 24px;
+        transition: transform 0.2s;
+    }
+    
+    .card-header-modern {
+        background: #fff;
+        padding: 15px 20px;
+        border-bottom: 1px solid #edf2f9;
+        border-radius: 12px 12px 0 0;
+        font-weight: 700;
+        color: #2c3e50;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: 600;
+        color: #555;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15);
+    }
+
+    /* Section Separators */
+    .section-divider {
+        border-top: 1px dashed #e3e6f0;
+        margin: 20px 0;
+    }
+
+    /* Price Section Specifics */
+    .price-display-box {
+        background: #f8f9fc;
+        border-radius: 10px;
+        padding: 15px;
+        border: 1px solid #e3e6f0;
+    }
+
+    .total-price-input {
+        background-color: #e8f5e9 !important; /* Light green background */
+        color: #198754;
+        font-weight: 800;
+        font-size: 1.25rem;
+        text-align: right;
+        border: 2px solid #198754;
+    }
+
+    .btn-submit {
+        padding: 12px 20px;
+        font-weight: 700;
+        font-size: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: all 0.15s ease;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+    }

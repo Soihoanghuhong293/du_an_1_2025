@@ -1,18 +1,21 @@
 <?php
-// BẬT HIỂN THỊ LỖI
+$protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+$url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+// Loại bỏ query string (?act=...) để lấy đường dẫn gốc
+$baseUrl = strtok($url, '?');
+// BẬT HIỂN THỊ LỖI (Tắt khi deploy)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 define('BASE_PATH', __DIR__);
 
-// Nạp cấu hình chung của ứng dụng
+// Nạp cấu hình & Helpers
 $config = require __DIR__ . '/config/config.php';
-
-// Helper
 require_once __DIR__ . '/src/helpers/helpers.php';
 require_once __DIR__ . '/src/helpers/database.php';
 
@@ -20,6 +23,8 @@ require_once __DIR__ . '/src/helpers/database.php';
 require_once __DIR__ . '/src/models/User.php';
 require_once __DIR__ . '/src/models/TourModel.php';
 require_once __DIR__ . '/src/models/Booking.php'; 
+
+require_once __DIR__ . '/src/models/BookingService.php';
 require_once __DIR__ . '/src/models/BookingService.php';  // ⭐ THÊM MỚI
 require_once __DIR__ . '/src/models/GuideProfile.php';  // ⭐ THÊM MỚI
 
@@ -30,70 +35,83 @@ require_once __DIR__ . '/src/controllers/TourController.php';
 require_once __DIR__ . '/src/controllers/BookingController.php';
 require_once __DIR__ . '/src/controllers/CategoryController.php';
 require_once __DIR__ . '/src/controllers/UserController.php';
-require_once __DIR__ . '/src/controllers/GuideController.php';  // ⭐ THÊM MỚI
+require_once __DIR__ . '/src/controllers/GuideController.php';
 require_once __DIR__ . '/src/controllers/BookingServiceController.php';
 require_once __DIR__ . '/src/controllers/DashboardController.php';
 
-
-
 // Khởi tạo controller
-$homeController = new HomeController();
-$authController = new AuthController();
-$tourController = new TourController();
-$bookingController = new BookingController();
-$categoryController = new CategoryController();
-$userController = new UserController();
-$guideController = new GuideController();  // ⭐ THÊM MỚI
-$bookingServiceController = new BookingServiceController();
-$dashboardController = new DashboardController();
+$homeController          = new HomeController();
+$authController          = new AuthController();
+$tourController          = new TourController();
+$bookingController       = new BookingController();
+$categoryController      = new CategoryController();
+$userController          = new UserController();
+$guideController         = new GuideController();
+$bookingServiceController= new BookingServiceController();
+$dashboardController     = new DashboardController();
 
-// Lấy tham số act (mặc định '/')
+// Lấy tham số act
 $act = $_GET['act'] ?? '/';
 
-
-// Router
+// Xử lý Route đặc biệt (AJAX toggle status user)
 if ($act === 'users/toggleStatus') {
-    (new UserController())->toggleStatus();
+    $userController->toggleStatus();
     exit;
 }
 
-// Router
+// Router chính
 match ($act) {
 
     // ===============================
-    // ⭐ TRANG CHỦ / WELCOME
+    // ⭐ TRANG CHỦ & AUTH
     // ===============================
-    '/', 'welcome' => $homeController->welcome(),
-    'home'         => $homeController->home(),
+    '/', 'welcome'      => $homeController->welcome(),
+    'home'              => $homeController->home(),
+    
+    'login'             => $authController->login(),
+    'check-login'       => $authController->checkLogin(),
+    'logout'            => $authController->logout(),
 
-    'home' => $homeController->home(),
+    // ===============================
+    // ⭐ THỐNG KÊ (DASHBOARD)
+    // ===============================
+    'dashboard'         => $dashboardController->index(),
 
-    // Auth
-    'login' => $authController->login(),
-    'register' => $authController->register(),
-    'check-login' => $authController->checkLogin(),
-    'handle-register' => $authController->handleRegister(),
-    'logout' => $authController->logout(),
+    // ===============================
+    // ⭐ BOOKING (QUẢN LÝ ĐẶT TOUR)
+    // ===============================
+    'bookings'          => $bookingController->index(),
+    'booking-create'    => $bookingController->create(),
+    'booking-store'     => $bookingController->store(),
+    'booking-delete'    => $bookingController->delete($_GET['id'] ?? null),
+    'booking-show'      => $bookingController->show($_GET['id'] ?? null),
+    
+    // AJAX / API Booking
+    'api-get-tour-info'       => $bookingController->getTourInfo(),     // <-- QUAN TRỌNG: ĐỂ FILL DATA
+    'booking-update-diary'    => $bookingController->updateDiary(),
+    'booking-update-schedule' => $bookingController->updateSchedule(),
+    'booking-update-service'  => $bookingController->updateService(),
+    'guest-ajax-checkin'      => $bookingController->ajaxCheckin(),
 
-    // Booking
-    'bookings' => $bookingController->index(),
-    'booking-create' => $bookingController->create(),
-    'booking-store'  => $bookingController->store(),
-    'booking-delete' => $bookingController->delete($_GET['id'] ?? null),
-    'booking-show'   => $bookingController->show($_GET['id'] ?? null),
-
-
-'guest-add'      => $bookingController->addGuest(),
-    'guest-delete'   => $bookingController->deleteGuest(),
+    // Quản lý khách trong Booking
+    'guest-add'          => $bookingController->addGuest(),
+    'guest-delete'       => $bookingController->deleteGuest(),
     'guest-update-rooms' => $bookingController->updateRooms(),
 
-
-
-  
+    // Phân bổ dịch vụ (Booking Service)
+    'booking-service-add'    => $bookingServiceController->add(),
+    'booking-service-delete' => $bookingServiceController->delete(),
 
     // ===============================
     // ⭐ USER MANAGEMENT
     // ===============================
+    'users'              => $userController->index(),
+    'users/create'       => $userController->create(),
+    'users/store'        => $userController->store(),
+    'users/edit'         => $userController->edit(),
+    'users/update'       => $userController->update(),
+    'users/show'         => $userController->detail(),
+    'users/delete'       => $userController->delete(),
     'users'          => $userController->index(),
     'users/create'   => $userController->create(),
     'users/store'    => $userController->store(),
@@ -107,61 +125,52 @@ match ($act) {
     // ===============================
     // ⭐ CATEGORIES
     // ===============================
-    'categories'     => $categoryController->index(),
-    'category-delete'=> $categoryController->delete($_GET['id'] ?? null),
-    'category-add'   => $categoryController->add(),
-    'category-edit'  => $categoryController->edit($_GET['id'] ?? null),
-    // 1. Hiển thị danh sách tour
-    'tour' => $tourController->index(),
+    'categories'         => $categoryController->index(),
+    'category-add'       => $categoryController->add(),
+    'category-edit'      => $categoryController->edit($_GET['id'] ?? null),
+    'category-delete'    => $categoryController->delete($_GET['id'] ?? null),
+
     // ===============================
     // ⭐ TOUR MANAGEMENT
     // ===============================
-    'tours'          => $tourController->index(),
-    'tour-add'       => $tourController->add(),
-    'tour-edit'      => $tourController->edit($_GET['id'] ?? null),
-    'tour-delete'    => $tourController->delete($_GET['id'] ?? null),
-    'tour-show'      => $tourController->show($_GET['id'] ?? null),
+   'tours'       => $tourController->index(), // Main list
+    'tour'        => $tourController->index(), // Alias
+    'tour-create' => $tourController->add(),   // Changed to 'tour-create' to match Booking naming convention
+    'tour-add'    => $tourController->add(),   // Alias
+    'tour-edit'   => $tourController->edit(),
+    'tour-delete' => $tourController->delete(),
+    'tour-show' => $tourController->show(),
 
     // ===============================
-    // ⭐ HƯỚNG DẪN VIÊN (HDV)
+    // ⭐ HƯỚNG DẪN VIÊN (GUIDE PORTAL & CRUD)
     // ===============================
     'guide-tours'        => $guideController->assignedTours(),
     'guide-customers'    => $guideController->customers(),
-
-    // ⭐ Nhật ký tour
+    'guide-show'         => $guideController->show(),
+    
     'guide-diary'        => $guideController->diary(),
+    'guide-diary-save'   => $guideController->saveDiary(), 
     'guide-diary-store'  => $guideController->diaryStore(),
-
-    // ⭐ Lịch trình
+    
     'guide-schedule'     => $guideController->schedule(),
-
-    // ⭐ Tải file phân công
     'guide-download'     => $guideController->downloadAssignment(),
-
-    'guide-confirm' => $guideController->confirm(),
-'guide-reject'  => $guideController->reject(),
-'guest-ajax-checkin' => $bookingController->ajaxCheckin(),
-
-'guide-show'       => $guideController->show(),       // <-- Xem chi tiết
-    'guide-diary-save' => $guideController->saveDiary(),
-    'guide-finish'  => $guideController->finish(), 
     
+    // Thao tác Guide
+    'guide-confirm'      => $guideController->confirm(),
+    'guide-reject'       => $guideController->reject(),
+    'guide-finish'       => $guideController->finish(),
 
-
-  //  API LẤY THÔNG TIN TOUR 
-    'api-get-tour-info' => $bookingController->getTourInfo(),
-    'booking-update-diary' => $bookingController->updateDiary(),
-    'booking-update-schedule' => $bookingController->updateSchedule(),
-    'booking-update-service'  => $bookingController->updateService(),
-
-    // PHÂN BỔ DỊCH VỤ
-    'booking-service-add'    => $bookingServiceController->add(),
-    'booking-service-delete' => $bookingServiceController->delete(),
-
-    // thong ke
-    'dashboard' => $dashboardController->index(),
     
+'api-get-available-guides' => $bookingController->getAvailableGuides(),
+
+    // CRUD cho Guide
+    'guides'            => $guideController->list(),         // Danh sách
+    'guides/create'     => $guideController->create(),       // Form thêm
+    'guides/store'      => $guideController->store(),        // Lưu mới
+    'guides/edit'       => $guideController->edit(),         // Form sửa
+    'guides/update'     => $guideController->update(),       // Cập nhật
+    'guides/delete'     => $guideController->delete(),       // Xóa
+    'guides/show'      => $guideController->showDetail(), // Xem chi tiết hướng dẫn viên
+
     default => $homeController->notFound(),
-    
 };
-

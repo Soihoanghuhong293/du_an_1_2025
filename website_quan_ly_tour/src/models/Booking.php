@@ -29,38 +29,52 @@ class Booking
     }
 
     // Tạo booking mới
-    public static function create($data)
-    {
-        $db = getDB();
-        $sql = "INSERT INTO bookings (
-                    tour_id, created_by, assigned_guide_id, status, 
-                    start_date, end_date, notes, 
-                    schedule_detail, service_detail, diary, lists_file, 
-                    created_at
-                )
-                VALUES (
-                    :tour_id, :created_by, :assigned_guide_id, :status, 
-                    :start_date, :end_date, :notes, 
-                    :schedule_detail, :service_detail, :diary, :lists_file, 
-                    NOW()
-                )";
+// Trong file Booking.php
 
-        $stmt = $db->prepare($sql);
+public static function create($data)
+{
+    $db = getDB();
+    $sql = "INSERT INTO bookings (
+                tour_id, created_by, assigned_guide_id, status, 
+                start_date, end_date, notes, 
+                schedule_detail, service_detail, diary, lists_file,
+                number_of_adults, number_of_children, total_price,
+                created_at
+            )
+            VALUES (
+                :tour_id, :created_by, :assigned_guide_id, :status, 
+                :start_date, :end_date, :notes, 
+                :schedule_detail, :service_detail, :diary, :lists_file,
+                :number_of_adults, :number_of_children, :total_price,
+                NOW()
+            )";
 
-        return $stmt->execute([
-            ':tour_id'           => $data['tour_id'],
-            ':created_by'        => $data['created_by'],
-            ':assigned_guide_id' => $data['assigned_guide_id'],
-            ':status'            => $data['status'],
-            ':start_date'        => $data['start_date'],
-            ':end_date'          => $data['end_date'],
-            ':notes'             => $data['notes'],
-            ':schedule_detail'   => $data['schedule_detail'] ?? null,
-            ':service_detail'    => $data['service_detail'] ?? null,
-            ':diary'             => $data['diary'] ?? null,
-            ':lists_file'        => $data['lists_file'] ?? null
-        ]);
+    $stmt = $db->prepare($sql);
+
+    $params = [
+        ':tour_id'           => $data['tour_id'],
+        ':created_by'        => $data['created_by'],
+        ':assigned_guide_id' => $data['assigned_guide_id'],
+        ':status'            => $data['status'],
+        ':start_date'        => $data['start_date'],
+        ':end_date'          => $data['end_date'],
+        ':notes'             => $data['notes'],
+        ':schedule_detail'   => $data['schedule_detail'] ?? null,
+        ':service_detail'    => $data['service_detail'] ?? null,
+        ':diary'             => $data['diary'] ?? null,
+        ':lists_file'        => $data['lists_file'] ?? null,
+        ':number_of_adults'   => $data['number_of_adults'],
+        ':number_of_children' => $data['number_of_children'],
+        ':total_price'        => $data['total_price']
+    ];
+
+    if ($stmt->execute($params)) {
+        // --- THAY ĐỔI QUAN TRỌNG: TRẢ VỀ ID VỪA TẠO ---
+        return $db->lastInsertId(); 
     }
+    
+    return false;
+}
 
     public static function getTours()
     {
@@ -280,4 +294,34 @@ class Booking
         $stmt = $db->prepare($sql);
         return $stmt->execute([':content' => $content, ':id' => $id]);
     }
+    // Trong file src/models/Booking.php
+
+public static function getAvailableGuides($startDate, $endDate)
+{
+    $db = getDB();
+
+    // 1. Logic tìm HDV BẬN:
+    // - Có assigned_guide_id trong bảng bookings
+    // - Trạng thái KHÔNG PHẢI là "Hủy" (status != 4 theo bảng tour_statuses của bạn)
+    // - Thời gian bị trùng lặp
+    
+    $sql = "SELECT id, name FROM users 
+            WHERE role = 'guide' 
+            AND status = 1 -- Chỉ lấy user đang hoạt động (nếu bảng users có cột status)
+            AND id NOT IN (
+                SELECT assigned_guide_id 
+                FROM bookings 
+                WHERE assigned_guide_id IS NOT NULL 
+                AND status IN (1, 2) 
+                AND (start_date <= :end_date AND end_date >= :start_date)
+            )";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute([
+        ':start_date' => $startDate,
+        ':end_date'   => $endDate
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 }
