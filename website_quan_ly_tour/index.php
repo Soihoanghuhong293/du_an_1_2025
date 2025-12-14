@@ -23,7 +23,10 @@ require_once __DIR__ . '/src/helpers/database.php';
 require_once __DIR__ . '/src/models/User.php';
 require_once __DIR__ . '/src/models/TourModel.php';
 require_once __DIR__ . '/src/models/Booking.php'; 
+
 require_once __DIR__ . '/src/models/BookingService.php';
+require_once __DIR__ . '/src/models/BookingService.php';  // ⭐ THÊM MỚI
+require_once __DIR__ . '/src/models/GuideProfile.php';  // ⭐ THÊM MỚI
 
 // Controllers
 require_once __DIR__ . '/src/controllers/HomeController.php';
@@ -66,9 +69,7 @@ match ($act) {
     'home'              => $homeController->home(),
     
     'login'             => $authController->login(),
-    'register'          => $authController->register(),
     'check-login'       => $authController->checkLogin(),
-    'handle-register'   => $authController->handleRegister(),
     'logout'            => $authController->logout(),
 
     // ===============================
@@ -111,6 +112,15 @@ match ($act) {
     'users/update'       => $userController->update(),
     'users/show'         => $userController->detail(),
     'users/delete'       => $userController->delete(),
+    'users'          => $userController->index(),
+    'users/create'   => $userController->create(),
+    'users/store'    => $userController->store(),
+    'users/edit'     => $userController->edit(),
+    'users/update'   => $userController->update(),
+    'users/show'     => $userController->detail(),
+    'users/delete'   => $userController->delete(),
+    'profile'        => $userController->profile(),
+    'profile-update' => $userController->updateProfile(),
 
     // ===============================
     // ⭐ CATEGORIES
@@ -129,17 +139,17 @@ match ($act) {
     'tour-add'    => $tourController->add(),   // Alias
     'tour-edit'   => $tourController->edit(),
     'tour-delete' => $tourController->delete(),
-'tour-show' => $tourController->show(),
+    'tour-show' => $tourController->show(),
 
     // ===============================
-    // ⭐ HƯỚNG DẪN VIÊN (GUIDE PORTAL)
+    // ⭐ HƯỚNG DẪN VIÊN (GUIDE PORTAL & CRUD)
     // ===============================
     'guide-tours'        => $guideController->assignedTours(),
     'guide-customers'    => $guideController->customers(),
     'guide-show'         => $guideController->show(),
     
     'guide-diary'        => $guideController->diary(),
-    'guide-diary-save'   => $guideController->saveDiary(), // Có thể bạn dùng cái này hoặc guide-diary-store
+    'guide-diary-save'   => $guideController->saveDiary(), 
     'guide-diary-store'  => $guideController->diaryStore(),
     
     'guide-schedule'     => $guideController->schedule(),
@@ -153,6 +163,14 @@ match ($act) {
     
 'api-get-available-guides' => $bookingController->getAvailableGuides(),
 
+    // CRUD cho Guide
+    'guides'            => $guideController->list(),         // Danh sách
+    'guides/create'     => $guideController->create(),       // Form thêm
+    'guides/store'      => $guideController->store(),        // Lưu mới
+    'guides/edit'       => $guideController->edit(),         // Form sửa
+    'guides/update'     => $guideController->update(),       // Cập nhật
+    'guides/delete'     => $guideController->delete(),       // Xóa
+    'guides/show'      => $guideController->showDetail(), // Xem chi tiết hướng dẫn viên
 
     default => $homeController->notFound(),
 };
