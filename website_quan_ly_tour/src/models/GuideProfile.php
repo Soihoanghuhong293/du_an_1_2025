@@ -51,55 +51,108 @@ class GuideProfile
     public static function createOrUpdate($user_id, $data)
     {
         $pdo = getDB();
-        
         // Kiểm tra xem hồ sơ đã tồn tại hay chưa
         $existing = self::findByUserId($user_id);
-        
-        if ($existing) {
-            // Update
-            $stmt = $pdo->prepare("
-                UPDATE guide_profiles SET
-                    birthdate = :birthdate,
-                    avatar = :avatar,
-                    phone = :phone,
-                    certificate = :certificate,
-                    languages = :languages,
-                    experience = :experience,
-                    history = :history,
-                    health_status = :health_status,
-                    group_type = :group_type,
-                    specialty = :specialty,
-                    updated_at = NOW()
-                WHERE user_id = :user_id
-            ");
-        } else {
-            // Create
-            $stmt = $pdo->prepare("
-                INSERT INTO guide_profiles (
-                    user_id, birthdate, avatar, phone, certificate, 
-                    languages, experience, history, health_status, 
-                    group_type, specialty, created_at, updated_at
-                ) VALUES (
-                    :user_id, :birthdate, :avatar, :phone, :certificate,
-                    :languages, :experience, :history, :health_status,
-                    :group_type, :specialty, NOW(), NOW()
-                )
-            ");
+            // Normalize: only write columns that exist in the table to avoid "unknown column" errors
+            $existing = self::findByUserId($user_id);
+            if ($existing) {
+                return self::update($existing['id'], array_merge(['user_id' => $user_id], $data));
+            }
+
+            // Ensure user_id is present
+            $data['user_id'] = $user_id;
+            return self::create($data);
+    }
+
+    // Lấy tất cả hướng dẫn viên
+    public static function all()
+    {
+        $db = getDB();
+        $stmt = $db->query("SELECT * FROM guide_profiles");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Tìm hướng dẫn viên theo id
+    public static function find($id)
+    {
+        $db = getDB();
+        $stmt = $db->prepare("SELECT * FROM guide_profiles WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Thêm mới hướng dẫn viên (chuẩn bảng guide_profiles)
+    public static function create($data)
+    {
+        $db = getDB();
+
+        // Get table columns and filter incoming data to only existing columns
+        $cols = self::getTableColumns();
+        $filtered = [];
+        foreach ($data as $k => $v) {
+            if (in_array($k, $cols)) $filtered[$k] = $v;
         }
 
-        return $stmt->execute([
-            'user_id' => $user_id,
-            'birthdate' => $data['birthdate'] ?? '',
-            'avatar' => $data['avatar'] ?? '',
-            'phone' => $data['phone'] ?? '',
-            'certificate' => $data['certificate'] ?? '',
-            'languages' => $data['languages'] ?? '',
-            'experience' => $data['experience'] ?? '',
-            'history' => $data['history'] ?? '',
-            'health_status' => $data['health_status'] ?? '',
-            'group_type' => $data['group_type'] ?? '',
-            'specialty' => $data['specialty'] ?? '',
-        ]);
+        // If table has created_at/updated_at and they are not provided, set them
+        $now = date('Y-m-d H:i:s');
+        if (in_array('created_at', $cols) && !isset($filtered['created_at'])) $filtered['created_at'] = $now;
+        if (in_array('updated_at', $cols) && !isset($filtered['updated_at'])) $filtered['updated_at'] = $now;
+
+        if (empty($filtered)) return false;
+
+        $placeholders = implode(', ', array_fill(0, count($filtered), '?'));
+        $columns = implode(', ', array_keys($filtered));
+        $stmt = $db->prepare("INSERT INTO guide_profiles ($columns) VALUES ($placeholders)");
+        return $stmt->execute(array_values($filtered));
+    }
+
+    // Cập nhật hướng dẫn viên (chuẩn bảng guide_profiles)
+    public static function update($id, $data)
+    {
+        $db = getDB();
+
+        $cols = self::getTableColumns();
+        $filtered = [];
+        foreach ($data as $k => $v) {
+            if (in_array($k, $cols) && $k !== 'id') $filtered[$k] = $v;
+        }
+
+        // set updated_at if present in table
+        if (in_array('updated_at', $cols)) $filtered['updated_at'] = date('Y-m-d H:i:s');
+
+        if (empty($filtered)) return false;
+
+        $setParts = [];
+        foreach (array_keys($filtered) as $c) {
+            $setParts[] = "$c = ?";
+        }
+        $sql = "UPDATE guide_profiles SET " . implode(', ', $setParts) . " WHERE id = ?";
+        $stmt = $db->prepare($sql);
+        $params = array_values($filtered);
+        $params[] = $id;
+        return $stmt->execute($params);
+    }
+
+    // Xóa hướng dẫn viên
+    public static function delete($id)
+    {
+        $db = getDB();
+        $stmt = $db->prepare("DELETE FROM guide_profiles WHERE id=?");
+        $stmt->execute([$id]);
+    }
+
+    // Lấy danh sách cột của bảng (cache) để tránh lỗi khi DB thay đổi
+    private static function getTableColumns()
+    {
+        static $cols = null;
+        if ($cols !== null) return $cols;
+
+        $db = getDB();
+        $stmt = $db->prepare("DESCRIBE guide_profiles");
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $cols = array_column($rows, 'Field');
+        return $cols;
     }
 }
 ?>

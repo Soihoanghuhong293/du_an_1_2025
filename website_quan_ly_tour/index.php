@@ -142,7 +142,7 @@ match ($act) {
     'tour-show' => $tourController->show(),
 
     // ===============================
-    // ⭐ HƯỚNG DẪN VIÊN (GUIDE PORTAL)
+    // ⭐ HƯỚNG DẪN VIÊN (GUIDE PORTAL & CRUD)
     // ===============================
     'guide-tours'        => $guideController->assignedTours(),
     'guide-customers'    => $guideController->customers(),
@@ -163,6 +163,14 @@ match ($act) {
     
 'api-get-available-guides' => $bookingController->getAvailableGuides(),
 
+    // CRUD cho Guide
+    'guides'            => $guideController->list(),         // Danh sách
+    'guides/create'     => $guideController->create(),       // Form thêm
+    'guides/store'      => $guideController->store(),        // Lưu mới
+    'guides/edit'       => $guideController->edit(),         // Form sửa
+    'guides/update'     => $guideController->update(),       // Cập nhật
+    'guides/delete'     => $guideController->delete(),       // Xóa
+    'guides/show'      => $guideController->showDetail(), // Xem chi tiết hướng dẫn viên
 
     default => $homeController->notFound(),
 };
