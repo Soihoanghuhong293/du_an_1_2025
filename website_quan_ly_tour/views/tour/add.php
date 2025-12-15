@@ -1,156 +1,150 @@
-<link rel="stylesheet" href="<?= BASE_URL ?>/public/css/index.css">
-<link rel="stylesheet" href="<?= BASE_URL ?>/public/css/show.css">
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h3 class="fw-bold mb-1">Thêm Tour Mới</h3>
-        <p class="text-muted">Nhập đầy đủ thông tin tour trước khi lưu</p>
-    </div>
-    <a href="index.php?act=tours" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Quay lại
-    </a>
-</div>
-
-<form role="form" method="POST" action="index.php?act=tour-add" enctype="multipart/form-data">
-
-    <div class="card card-modern">
-        <div class="card-header-modern">
-            <ul class="nav nav-tabs nav-tabs-modern card-header-tabs">
-            <li class="nav-item">
-                <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#general">Thông tin chung</button>
-            </li>
-
-            <li class="nav-item">
-                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#schedule">Lịch trình</button>
-            </li>
-
-            <li class="nav-item">
-                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#policy">Chính sách</button>
-            </li>
-
-            <li class="nav-item">
-                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#images">Hình ảnh</button>
-            </li>
-
-            <li class="nav-item">
-                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#price">Giá</button>
-            </li>
-            </ul>
-        </div>
-
-        <div class="card-body">
-            <div class="tab-content pt-2">
-
-                <!--  TAB 1 : GENERAL  -->
-                <div class="tab-pane fade show active" id="general">
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Tên Tour (*)</label>
-                        <input type="text" name="ten_tour" class="form-control"
-                            value="<?= htmlspecialchars($_POST['ten_tour'] ?? '') ?>" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Danh mục (*)</label>
-                        <select name="category_id" class="form-select" required>
-                            <option value="">-- Chọn danh mục --</option>
-                            <?php foreach ($categories as $c): ?>
-                                <option value="<?= $c['id'] ?>"
-                                    <?= (($_POST['category_id'] ?? '') == $c['id']) ? 'selected' : '' ?>>
-                                    <?= $c['name'] ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Giá (VNĐ) (*)</label>
-                        <input type="number" name="gia" min="0" class="form-control"
-                            value="<?= htmlspecialchars($_POST['gia'] ?? '') ?>" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Mô tả ngắn</label>
-                        <textarea name="mo_ta" rows="4" class="form-control"><?= htmlspecialchars($_POST['mo_ta'] ?? '') ?></textarea>
-                    </div>
-
-                </div>
-
-                <!--  TAB 2: LỊCH TRÌNH -->
-                <div class="tab-pane fade" id="schedule">
-                    <label class="form-label fw-bold">Lịch trình (JSON)</label>
-                    <textarea name="lich_trinh" rows="12" class="form-control json-editor"><?= htmlspecialchars($_POST['lich_trinh'] ?? '') ?></textarea>
-                    <small class="text-muted">Ví dụ: [{"day":1,"title":"Hà Nội - Sapa"}]</small>
-                </div>
-
-                <!-- TAB 3: CHÍNH SÁCH -->
-                <div class="tab-pane fade" id="policy">
-                    <label class="form-label fw-bold">Chính sách (JSON)</label>
-                    <textarea name="chinh_sach" rows="12" class="form-control json-editor"><?= htmlspecialchars($_POST['chinh_sach'] ?? '') ?></textarea>
-                </div>
-
-                <!-- TAB 4 — HÌNH ẢNH -->
-                <div class="tab-pane fade" id="images">
-                    <label class="form-label fw-bold">Chọn ảnh Tour</label>
-                    <input type="file" name="hinh_anh[]" class="form-control" accept="image/*" multiple>
-
-                    <div class="mt-3" id="preview" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
-                    <small class="text-muted">Hỗ trợ nhiều ảnh • Tự động preview</small>
-                </div>
-
-                <!-- TAB 5 — GIÁ CHI TIẾT -->
-                <div class="tab-pane fade" id="price">
-                    <label class="form-label fw-bold">Giá chi tiết (JSON)</label>
-                    <textarea name="gia_chi_tiet" rows="10" class="form-control json-editor">
-                        <?= htmlspecialchars($_POST['gia_chi_tiet'] ?? '') ?>
-                    </textarea>
-                    <small class="text-muted">Ví dụ: {"người_lớn":3500000,"trẻ_em":2800000}</small>
-                </div>
-
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="m-0 fw-bold">Thêm Tour Mới</h1>
+                <a href="index.php?act=tours" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+                </a>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="text-end mt-4">
-        <button type="submit" class="btn btn-primary btn-lg px-5 fw-bold">
-            <i class="bi bi-save"></i> Lưu Tour
-        </button>
-    </div>
+    <section class="content">
+        <div class="container-fluid">
+            
+            <?php if (!empty($errors)): ?>
+                <div class="alert alert-danger shadow-sm mb-4">
+                    <h6 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Đã có lỗi xảy ra:</h6>
+                    <ul class="mb-0 ps-3">
+                        <?php foreach ($errors as $error) echo "<li>$error</li>"; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
 
-</form>
+            <form action="index.php?act=tour-create" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                    
+                    <div class="col-lg-8">
+                        <div class="card card-primary card-outline shadow-sm mb-4">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="card-title fw-bold m-0 text-primary"><i class="bi bi-info-circle me-2"></i>Thông tin chung</h5>
+                            </div>
+                            <div class="card-body">
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Tên Tour <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-lg" name="name" value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" required placeholder="Nhập tên tour...">
+                                </div>
 
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Danh mục <span class="text-danger">*</span></label>
+                                        <select name="category_id" class="form-select" required>
+                                            <option value="">-- Chọn danh mục --</option>
+                                            <?php if (!empty($categories)): foreach ($categories as $cate): ?>
+                                                <option value="<?= $cate['id'] ?>" <?= (($_POST['category_id'] ?? '') == $cate['id']) ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($cate['name']) ?>
+                                                </option>
+                                            <?php endforeach; endif; ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Thời lượng (Ngày)</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" name="duration_days" value="<?= htmlspecialchars($_POST['duration_days'] ?? 1) ?>" min="1">
+                                            <span class="input-group-text">Ngày</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-<script>
-// Preview hình ảnh
-document.querySelector('input[name="hinh_anh[]"]').addEventListener('change', function(e) {
-    const preview = document.getElementById("preview");
-    preview.innerHTML = "";
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Mô tả / Giới thiệu</label>
+                                    <textarea class="form-control" name="description" rows="5" placeholder="Mô tả ngắn về tour..."><?= htmlspecialchars($_POST['description'] ?? '') ?></textarea>
+                                </div>
 
-    [...e.target.files].forEach(file => {
-        const reader = new FileReader();
-        reader.onload = ev => {
-            const img = document.createElement("img");
-            img.src = ev.target.result;
-            img.style.width = "120px";
-            img.className = "rounded shadow-sm";
-            preview.appendChild(img);
-        }
-        reader.readAsDataURL(file);
-    });
-});
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Lịch trình chi tiết</label>
+                                    <textarea class="form-control" name="schedule_text" rows="8" placeholder="Ngày 1: ... &#10;Ngày 2: ..."><?= htmlspecialchars($_POST['schedule_text'] ?? '') ?></textarea>
+                                    <small class="text-muted"><i class="bi bi-info-circle"></i> Nhập nội dung chi tiết. Hệ thống sẽ tự động lưu.</small>
+                                </div>
 
-// Tự động format JSON input
-document.querySelectorAll(".json-editor").forEach(textarea => {
-    textarea.addEventListener("blur", () => {
-        try {
-            let json = textarea.value.trim();
-            if (json) {
-                textarea.value = JSON.stringify(JSON.parse(json), null, 4);
-                textarea.style.borderColor = "#198754";
-            }
-        } catch {
-            textarea.style.borderColor = "#dc3545";
-        }
-    });
-});
-</script>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Chính sách & Điều khoản</label>
+                                    <textarea class="form-control" name="policy_text" rows="4" placeholder="Chính sách hoàn hủy, bao gồm/không bao gồm..."><?= htmlspecialchars($_POST['policy_text'] ?? '') ?></textarea>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        
+                        <div class="card card-success card-outline shadow-sm mb-4">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="card-title fw-bold m-0 text-success"><i class="bi bi-gear-fill me-2"></i>Cấu hình & Giá</h5>
+                            </div>
+                            <div class="card-body">
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Trạng thái</label>
+                                    <select name="status" class="form-select">
+                                        <option value="1" <?= (($_POST['status'] ?? 1) == 1) ? 'selected' : '' ?>>Hoạt động</option>
+                                        <option value="0" <?= (($_POST['status'] ?? 1) == 0) ? 'selected' : '' ?>>Tạm ẩn</option>
+                                    </select>
+                                </div>
+
+                                <hr>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-success">Giá Cơ Bản (VNĐ) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control fw-bold text-success border-success" name="price" value="<?= htmlspecialchars($_POST['price'] ?? 0) ?>" required min="0">
+                                </div>
+
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold">Giá Người lớn</label>
+                                        <input type="number" class="form-control form-control-sm" name="prices[adult]" value="<?= htmlspecialchars($_POST['prices']['adult'] ?? 0) ?>" min="0">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold">Giá Trẻ em</label>
+                                        <input type="number" class="form-control form-control-sm" name="prices[child]" value="<?= htmlspecialchars($_POST['prices']['child'] ?? 0) ?>" min="0">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="card card-info card-outline shadow-sm mb-4">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="card-title fw-bold m-0 text-info"><i class="bi bi-images me-2"></i>Hình ảnh & NCC</h5>
+                            </div>
+                            <div class="card-body">
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Nhà cung cấp</label>
+                                    <input type="text" class="form-control" name="suppliers_text" value="<?= htmlspecialchars($_POST['suppliers_text'] ?? '') ?>" placeholder="NCC A, NCC B...">
+                                    <small class="text-muted d-block mt-1">Phân tách bằng dấu phẩy (,)</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Ảnh Tour</label>
+                                    <input type="file" class="form-control" name="images[]" multiple accept="image/*">
+                                    <small class="text-muted d-block mt-1">Chọn nhiều ảnh cùng lúc</small>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                                <i class="bi bi-plus-lg me-2"></i> TẠO TOUR MỚI
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>

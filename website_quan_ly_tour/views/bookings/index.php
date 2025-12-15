@@ -1,11 +1,13 @@
-<?php ob_start(); ?>
+<?php ob_start(); 
+// Lấy từ khóa tìm kiếm hiện tại (nếu có) để hiển thị lại trong ô input
+$currentKeyword = isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '';
+?>
 
 <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/index.css">
 
 <div class="row">
     <div class="col-12">
         
-        <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h3 class="mb-1 fw-bold text-dark">Quản lý Booking</h3>
@@ -18,32 +20,35 @@
             </div>
         </div>
 
-        <!-- Card -->
         <div class="card card-modern">
             
-            <!-- Card Header: Tìm kiếm & Xuất Excel -->
-            <div class="card-header-modern d-flex justify-content-between align-items-center">
-                <form method="GET" action="index.php" class="d-flex align-items-center gap-2 mb-3">
+            <div class="card-header-modern">
+                <form action="index.php" method="GET" class="d-flex gap-2 align-items-center w-100">
                     <input type="hidden" name="act" value="bookings">
                     
-                    <input type="text" name="search" class="form-control" placeholder="Tìm kiếm booking..." 
-                           value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search"></i> Tìm kiếm
+                    <div class="input-group" style="width: 300px;">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" 
+                               name="keyword" 
+                               class="form-control bg-light border-start-0" 
+                               placeholder="Tìm theo tên tour, khách hàng..." 
+                               value="<?= $currentKeyword ?>">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-light border fw-bold text-primary">
+                        <i class="bi bi-funnel"></i> Lọc
                     </button>
 
-                    <?php if (!empty($_GET['search'])): ?>
-                        <a href="index.php?act=bookings" class="btn btn-secondary">Hiển thị tất cả</a>
+                    <?php if(!empty($currentKeyword)): ?>
+                        <a href="index.php?act=bookings" class="btn btn-outline-danger border" title="Xóa tìm kiếm">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
                     <?php endif; ?>
                 </form>
 
-                <div>
-                    <button class="btn btn-light btn-sm text-muted"><i class="bi bi-download"></i> Xuất Excel</button>
-                </div>
+                
             </div>
 
-            <!-- Table -->
             <div class="table-responsive">
                 <table class="table table-modern mb-0">
                     <thead>
@@ -69,7 +74,9 @@
                                             </div>
                                             <div>
                                                 <span class="tour-name"><?= htmlspecialchars($bk['tour_name'] ?? 'Chưa đặt tên') ?></span>
-                                                <span class="booking-id">#<?= htmlspecialchars($bk['id']) ?></span>
+                                                <div class="small text-muted">
+                                                    ID: <span class="booking-id fw-bold">#<?= htmlspecialchars($bk['id']) ?></span>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -96,7 +103,7 @@
                                             <div class="avatar-circle bg-soft-secondary small" style="width: 25px; height: 25px;">
                                                 <?= strtoupper($creatorInitial) ?>
                                             </div>
-                                            <span class="text-muted small"><?= htmlspecialchars($bk['creator_name'] ?? 'N/A') ?></span>
+                                            <span class="text-muted small ms-2"><?= htmlspecialchars($bk['creator_name'] ?? 'N/A') ?></span>
                                         </div>
 
                                         <div class="d-flex align-items-center" title="Hướng dẫn viên">
@@ -106,12 +113,12 @@
                                                 <div class="avatar-circle bg-soft-success small" style="width: 25px; height: 25px;">
                                                     <?= strtoupper($guideInitial) ?>
                                                 </div>
-                                                <span class="text-dark small fw-medium"><?= htmlspecialchars($bk['guide_name']) ?></span>
+                                                <span class="text-dark small fw-medium ms-2"><?= htmlspecialchars($bk['guide_name']) ?></span>
                                             <?php else: ?>
                                                 <div class="avatar-circle bg-light border small" style="width: 25px; height: 25px;">
                                                     <i class="bi bi-person-dash text-muted" style="font-size: 10px;"></i>
                                                 </div>
-                                                <span class="text-muted small fst-italic">Chưa phân công</span>
+                                                <span class="text-muted small fst-italic ms-2">Chưa phân công</span>
                                             <?php endif; ?>
                                         </div>
                                     </td>
@@ -161,9 +168,14 @@
                             <tr>
                                 <td colspan="6" class="text-center py-5">
                                     <div class="text-muted">
-                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                                        Hiện chưa có booking nào. <br>
-                                        <a href="index.php?act=booking-create" class="fw-bold text-primary">Tạo booking mới ngay</a>
+                                        <i class="bi bi-search fs-1 d-block mb-3"></i>
+                                        <?php if(!empty($currentKeyword)): ?>
+                                            Không tìm thấy kết quả nào cho từ khóa: "<strong><?= $currentKeyword ?></strong>"
+                                            <br><a href="index.php?act=bookings" class="fw-bold text-primary">Xóa bộ lọc</a>
+                                        <?php else: ?>
+                                            Hiện chưa có booking nào. <br>
+                                            <a href="index.php?act=booking-create" class="fw-bold text-primary">Tạo booking mới ngay</a>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
@@ -175,7 +187,7 @@
             <div class="card-footer bg-white border-0 py-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <small class="text-muted">Hiển thị <?= count($bookings) ?> kết quả</small>
-                </div>
+                    </div>
             </div>
 
         </div>
@@ -187,7 +199,7 @@ $content = ob_get_clean();
 
 view('layouts.AdminLayout', [
     'title' => 'Danh sách Booking',
-    'pageTitle' => 'Booking',
+    'pageTitle' => '  Hệ thống Tour Fpoly  ',
     'content' => $content,
     'breadcrumb' => [
         ['label' => 'Dashboard', 'url' => BASE_URL . 'home'],

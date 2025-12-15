@@ -128,5 +128,97 @@ class UserController
     
         redirect('users');
     }
+
+    // Hiển thị hồ sơ người dùng hiện tại
+    public function profile()
+    {
+        // Kiểm tra người dùng đã đăng nhập hay chưa
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . 'login');
+            exit;
+        }
+
+        $user = User::findById($_SESSION['user_id']);
+        if (!$user) {
+            header('Location: ' . BASE_URL . 'login');
+            exit;
+        }
+
+        // Lấy thông tin hồ sơ (guide_profiles) nếu có
+        $guideProfile = GuideProfile::findByUserId($user->id);
+
+        view('User.profile', [
+            'title' => 'Hồ sơ cá nhân',
+            'user' => $user,
+            'guideProfile' => $guideProfile
+        ]);
+    }
+
+    // Cập nhật hồ sơ người dùng
+    public function updateProfile()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('profile');
+        }
+
+        $id = $_POST['id'] ?? null;
+        if (!$id || $id != $_SESSION['user_id']) {
+            redirect('profile');
+        }
+
+        $pdo = getDB();
+        
+        // Chuẩn bị dữ liệu cập nhật users
+        $updateData = [
+            'name' => $_POST['name'],
+            'email' => $_POST['email'],
+            'role' => $_POST['role'],
+            'id' => $id
+        ];
+
+        // Nếu có mật khẩu mới
+        if (!empty($_POST['password'])) {
+            $updateData['password'] = password_hash($_POST['password'], PASSWORD_BCRYPT);
+            $stmt = $pdo->prepare("UPDATE users SET name=:name, email=:email, role=:role, password=:password WHERE id=:id");
+            $stmt->execute([
+                'name' => $updateData['name'],
+                'email' => $updateData['email'],
+                'role' => $updateData['role'],
+                'password' => $updateData['password'],
+                'id' => $updateData['id']
+            ]);
+        } else {
+            $stmt = $pdo->prepare("UPDATE users SET name=:name, email=:email, role=:role WHERE id=:id");
+            $stmt->execute([
+                'name' => $updateData['name'],
+                'email' => $updateData['email'],
+                'role' => $updateData['role'],
+                'id' => $updateData['id']
+            ]);
+        }
+
+        // Cập nhật thông tin guide profile nếu là hướng dẫn viên
+        if ($_POST['role'] === 'guide') {
+            $guideData = [
+                'birthdate' => $_POST['birthdate'] ?? '',
+                'avatar' => $_POST['avatar'] ?? '',
+                'phone' => $_POST['phone'] ?? '',
+                'certificate' => $_POST['certificate'] ?? '',
+                'languages' => $_POST['languages'] ?? '',
+                'experience' => $_POST['experience'] ?? '',
+                'history' => $_POST['history'] ?? '',
+                'health_status' => $_POST['health_status'] ?? '',
+                'group_type' => $_POST['group_type'] ?? '',
+                'specialty' => $_POST['specialty'] ?? '',
+            ];
+            GuideProfile::createOrUpdate($id, $guideData);
+        }
+
+        // Cập nhật session với tên mới
+        $_SESSION['user_name'] = $_POST['name'];
+
+        header('Location: ' . BASE_URL . 'profile?updated=1');
+        exit;
+    }
         
 }

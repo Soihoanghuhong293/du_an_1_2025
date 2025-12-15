@@ -30,9 +30,7 @@ function formatTextContent($text) {
         <a href="index.php?act=bookings" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left"></i> Quay lại
         </a>
-        <a href="#" class="btn btn-primary btn-sm">
-            <i class="bi bi-pencil-square"></i> Cập nhật Booking
-        </a>
+        
     </div>
 </div>
 
