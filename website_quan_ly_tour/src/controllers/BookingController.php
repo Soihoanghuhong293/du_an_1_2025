@@ -8,20 +8,24 @@ class BookingController
 // index(): danh sách booking
 public function index(): void
 {
-    $search = $_GET['search'] ?? ''; // Lấy từ query string nếu có
-    $statusFilter = $_GET['status'] ?? ''; // Có thể lọc trạng thái nếu cần
+    requireLogin();
+    $user = getCurrentUser();
 
-    if (!empty($search) || !empty($statusFilter)) {
-        $bookings = Booking::search($search, $statusFilter); // Gọi model mới
-    } else {
-        $bookings = Booking::all();
+    // Admin mới được toàn quyền
+    if ($user->isAdmin()) {
+        $keyword = $_GET['keyword'] ?? '';
+        $bookings = Booking::all($keyword);
+    } 
+    // Hướng dẫn viên: chỉ xem booking được giao
+    else {
+        $bookings = Booking::getAssignedBookings($user->id);
+        $keyword = '';
     }
 
     view('bookings.index', [
         'bookings' => $bookings,
-        'search'   => $search,
-        'statusFilter' => $statusFilter,
-        'title' => 'Quản lý Booking'
+        'search'   => $keyword,
+        'title'    => 'Quản lý Booking'
     ]);
 }
 

@@ -16,6 +16,7 @@ class TourController {
     // ⭐ 1. INDEX: Danh sách Tour
     // =============================================================
     public function index() {
+        
         $tours = $this->tourModel->getAll(); 
         
         ob_start();

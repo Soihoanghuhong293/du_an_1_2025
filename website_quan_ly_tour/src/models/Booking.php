@@ -347,4 +347,5 @@ public static function getAvailableGuides($startDate, $endDate)
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
 }

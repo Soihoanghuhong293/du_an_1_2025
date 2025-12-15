@@ -2,7 +2,9 @@
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
   <div class="sidebar-brand">
     <a href="<?= url('home') ?>" class="brand-link d-flex align-items-center gap-2">
-      <img src="<?= asset('dist/assets/img/AdminLTELogo.png') ?>" alt="Logo" class="brand-image opacity-75 shadow" style="width:32px;height:32px;" />
+      <img src="<?= asset('dist/assets/img/AdminLTELogo.png') ?>" alt="Logo"
+           class="brand-image opacity-75 shadow"
+           style="width:32px;height:32px;" />
       <span class="brand-text fw-light">Quản Lý Tour</span>
     </a>
   </div>
@@ -11,28 +13,38 @@
     <nav class="mt-2">
       <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu">
 
+        <!-- Dashboard: ai đăng nhập cũng thấy -->
+        <?php if (isLoggedIn()): ?>
         <li class="nav-item">
           <a href="<?= url('home') ?>" class="nav-link">
             <i class="nav-icon bi bi-speedometer"></i>
             <p>Dashboard</p>
           </a>
         </li>
+        <?php endif; ?>
 
-        <?php if (isAdmin()): ?>
+        <!-- ================= ADMIN ================= -->
+        <?php if (isLoggedIn() && isAdmin()): ?>
+
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-airplane-engines"></i>
             <p>Quản lý Tour <i class="nav-arrow bi bi-chevron-right"></i></p>
           </a>
           <ul class="nav nav-treeview">
-
-            <li class="nav-item"><a href="<?= url('tours') ?>" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>Danh sách Tour</p></a></li>
-            <li class="nav-item"><a href="<?= url('tour-add') ?>" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>Thêm Tour mới</p></a></li>
+            <li class="nav-item">
+              <a href="<?= url('tours') ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i><p>Danh sách Tour</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="<?= url('tour-add') ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i><p>Thêm Tour mới</p>
+              </a>
+            </li>
           </ul>
         </li>
-        <?php endif; ?>
 
-        <?php if (isAdmin()): ?>
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-journal-check"></i>
@@ -43,12 +55,9 @@
             <li class="nav-item"><a href="<?= url('booking-create') ?>" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>Thêm Booking</p></a></li>
           </ul>
         </li>
-        <?php endif; ?>
 
-        <?php if (isAdmin()): ?>
         <li class="nav-item">
           <a href="#" class="nav-link">
-
             <i class="nav-icon bi bi-journal-bookmark"></i>
             <p>Quản lý Danh mục <i class="nav-arrow bi bi-chevron-right"></i></p>
           </a>
@@ -57,9 +66,7 @@
             <li class="nav-item"><a href="<?= url('category-add') ?>" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>Thêm Danh mục</p></a></li>
           </ul>
         </li>
-        <?php endif; ?>
 
-        <?php if (isAdmin()): ?>
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-people"></i>
@@ -69,40 +76,53 @@
             <li class="nav-item"><a href="<?= url('users') ?>" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>Danh sách Người dùng</p></a></li>
           </ul>
         </li>
-        <?php endif; ?>
-        <?php if (isAdmin()): ?>
+
         <li class="nav-item">
           <a href="#" class="nav-link">
-            <i class="nav-icon bi bi-people"></i>
-            <p>Thống kê<i class="nav-arrow bi bi-chevron-right"></i></p>
+            <i class="nav-icon bi bi-graph-up"></i>
+            <p>Thống kê <i class="nav-arrow bi bi-chevron-right"></i></p>
           </a>
-
           <ul class="nav nav-treeview">
             <li class="nav-item">
-    <a href="index.php?act=dashboard" class="nav-link">
-        <i class="nav-icon bi bi-people"></i>
-        <p>Thống kê</p>
-    </a>
-</li>
+              <a href="<?= url('dashboard') ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i><p>Dashboard</p>
+              </a>
+            </li>
           </ul>
         </li>
+
         <?php endif; ?>
 
-        <?php if (isGuide()): ?>
+        <!-- ================= GUIDE ================= -->
+        <?php if (isLoggedIn() && isGuide() && !isAdmin()): ?>
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon bi bi-person-vcard"></i>
             <p>Hướng dẫn viên <i class="nav-arrow bi bi-chevron-right"></i></p>
           </a>
           <ul class="nav nav-treeview">
-            <li class="nav-item"><a href="<?= url('guide-tours') ?>" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>Tour được phân công</p></a></li>
-            <li class="nav-item"><a href="<?= url('guide-schedule') ?>" class="nav-link"><i class="nav-icon bi bi-circle"></i><p>Lịch làm việc</p></a></li>
+            <li class="nav-item">
+              <a href="<?= url('guide-tours') ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i><p>Tour được phân công</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="<?= url('guide-schedule') ?>" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i><p>Lịch làm việc</p>
+              </a>
+            </li>
           </ul>
         </li>
         <?php endif; ?>
 
+        <!-- SYSTEM -->
         <li class="nav-header">HỆ THỐNG</li>
-        <li class="nav-item"><a href="<?= url('logout') ?>" class="nav-link"><i class="nav-icon bi bi-box-arrow-right"></i><p>Đăng xuất</p></a></li>
+        <li class="nav-item">
+          <a href="<?= url('logout') ?>" class="nav-link">
+            <i class="nav-icon bi bi-box-arrow-right"></i>
+            <p>Đăng xuất</p>
+          </a>
+        </li>
 
       </ul>
     </nav>

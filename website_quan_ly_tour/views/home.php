@@ -1,3 +1,4 @@
+
 <?php
 ob_start();
 ?>
@@ -27,7 +28,7 @@ ob_start();
             <div class="card-body">
                 <i class="bi bi-map fs-1 text-primary"></i>
                 <h5 class="mt-2 mb-0">Tour du lịch</h5>
-                <p class="text-muted">Quản lý lịch trình & điểm đến</p>
+                <p class="text-muted">Lịch trình & điểm đến</p>
             </div>
         </div>
     </div>
@@ -36,7 +37,7 @@ ob_start();
             <div class="card-body">
                 <i class="bi bi-people fs-1 text-success"></i>
                 <h5 class="mt-2 mb-0">Khách hàng</h5>
-                <p class="text-muted">Theo dõi số lượng & booking</p>
+                <p class="text-muted">Theo dõi booking</p>
             </div>
         </div>
     </div>
@@ -45,7 +46,7 @@ ob_start();
             <div class="card-body">
                 <i class="bi bi-person-workspace fs-1 text-warning"></i>
                 <h5 class="mt-2 mb-0">Hướng dẫn viên</h5>
-                <p class="text-muted">Phân công & nhật ký tour</p>
+                <p class="text-muted">Phân công tour</p>
             </div>
         </div>
     </div>
@@ -63,54 +64,56 @@ ob_start();
             </div>
 
             <div class="card-body">
-                <?php if (isLoggedIn()): ?>
-                    <!-- Welcome -->
-                    <div class="alert alert-success border-0 shadow-sm">
-                        <h4 class="alert-heading">
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            Chào mừng bạn quay lại!
-                        </h4>
-                        <p class="mb-0">
-                            Xin chào <strong><?= htmlspecialchars($user->name) ?></strong>,
-                            bạn đang đăng nhập với quyền
-                            <strong><?= $user->isAdmin() ? 'Quản trị viên' : 'Hướng dẫn viên' ?></strong>.
-                        </p>
-                    </div>
 
-                    <!-- User info -->
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <h5 class="fw-bold mb-3">
-                                        <i class="bi bi-person-circle me-2 text-primary"></i>
-                                        Thông tin tài khoản
-                                    </h5>
+                <!-- CHÀO MỪNG -->
+                <div class="alert alert-success border-0 shadow-sm">
+                    <h4 class="alert-heading">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        Chào mừng bạn quay lại!
+                    </h4>
+                    <p class="mb-0">
+                        Xin chào <strong><?= htmlspecialchars($user->name) ?></strong>,
+                        bạn đang đăng nhập với quyền
+                        <strong><?= $user->isAdmin() ? 'Quản trị viên' : 'Hướng dẫn viên' ?></strong>.
+                    </p>
+                </div>
 
-                                    <p>
-                                        <i class="bi bi-envelope me-2"></i>
-                                        <strong>Email:</strong>
-                                        <?= htmlspecialchars($user->email) ?>
-                                    </p>
+                <div class="row mt-4">
+                    <!-- USER INFO -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="fw-bold mb-3">
+                                    <i class="bi bi-person-circle me-2 text-primary"></i>
+                                    Thông tin tài khoản
+                                </h5>
 
-                                    <p class="mb-0">
-                                        <i class="bi bi-shield-lock me-2"></i>
-                                        <strong>Vai trò:</strong>
-                                        <?= $user->isAdmin() ? 'Quản trị viên' : 'Hướng dẫn viên' ?>
-                                    </p>
-                                </div>
+                                <p>
+                                    <i class="bi bi-envelope me-2"></i>
+                                    <strong>Email:</strong>
+                                    <?= htmlspecialchars($user->email) ?>
+                                </p>
+
+                                <p class="mb-0">
+                                    <i class="bi bi-shield-lock me-2"></i>
+                                    <strong>Vai trò:</strong>
+                                    <?= $user->isAdmin() ? 'Quản trị viên' : 'Hướng dẫn viên' ?>
+                                </p>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Quick actions -->
-                        <div class="col-md-6">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <h5 class="fw-bold mb-3">
-                                        <i class="bi bi-lightning-fill me-2 text-warning"></i>
-                                        Truy cập nhanh
-                                    </h5>
+                    <!-- QUICK VIEW -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="fw-bold mb-3">
+                                    <i class="bi bi-lightning-fill me-2 text-warning"></i>
+                                    Thông tin nhanh
+                                </h5>
 
+                                <?php if ($user->isAdmin()): ?>
+                                    <!-- ADMIN -->
                                     <a href="<?= BASE_URL ?>?act=tours"
                                        class="btn btn-outline-primary w-100 mb-2">
                                         <i class="bi bi-map me-2"></i>
@@ -128,26 +131,45 @@ ob_start();
                                         <i class="bi bi-person-workspace me-2"></i>
                                         Hướng dẫn viên
                                     </a>
-                                </div>
+
+                                <?php else: ?>
+                                    <!-- HƯỚNG DẪN VIÊN: CHỈ HIỂN THỊ -->
+                                    <div class="alert alert-info border-0 shadow-sm">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Bạn đang xem giao diện dành cho
+                                        <strong>Hướng dẫn viên</strong>
+                                    </div>
+
+                                    <div class="card border-0 shadow-sm mb-2">
+                                        <div class="card-body d-flex align-items-center">
+                                            <i class="bi bi-geo-alt fs-3 text-primary me-3"></i>
+                                            <div>
+                                                <h6 class="mb-0">Tour được phân công</h6>
+                                                <small class="text-muted">
+                                                    Danh sách tour bạn tham gia
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body d-flex align-items-center">
+                                            <i class="bi bi-calendar-check fs-3 text-success me-3"></i>
+                                            <div>
+                                                <h6 class="mb-0">Lịch làm việc</h6>
+                                                <small class="text-muted">
+                                                    Lịch trình & nhiệm vụ
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
                             </div>
                         </div>
                     </div>
+                </div>
 
-                <?php else: ?>
-                    <div class="alert alert-warning shadow-sm border-0">
-                        <h4 class="alert-heading">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            Chưa đăng nhập
-                        </h4>
-                        <p class="mb-0">
-                            Vui lòng
-                            <a href="<?= BASE_URL ?>?act=login" class="alert-link fw-bold">
-                                đăng nhập
-                            </a>
-                            để sử dụng đầy đủ chức năng quản lý tour.
-                        </p>
-                    </div>
-                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -164,4 +186,3 @@ view('layouts.AdminLayout', [
         ['label' => 'Trang chủ', 'url' => BASE_URL . 'home', 'active' => true],
     ],
 ]);
-?>

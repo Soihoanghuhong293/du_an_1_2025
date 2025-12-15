@@ -18,3 +18,4 @@ return [
         'charset' => 'utf8mb4', // Mã hóa
     ],
 ];
+ 

@@ -112,8 +112,8 @@ $currentKeyword = isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) :
                                             <br><a href="index.php?act=categories" class="fw-bold text-primary">Xóa bộ lọc</a>
                                         <?php else: ?>
                                             Chưa có danh mục nào. <br>
-                                            <a href="index.php?act=category-create" class="fw-bold text-primary">Thêm danh mục mới</a>
-                                        <?php endif; ?>
+                                            <a href="index.php?act=category-form" class="btn btn-primary">
+                                            <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>

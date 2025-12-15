@@ -296,6 +296,13 @@ class GuideController
     // Danh sách hướng dẫn viên
     public function list()
     {
+        requireLogin();
+        $user = getCurrentUser();
+    
+        if (!$user->isAdmin()) {
+            die('Bạn không có quyền xem danh sách hướng dẫn viên');
+        }
+    
         $pdo = getDB();
         $stmt = $pdo->prepare("
             SELECT gp.*, u.name, u.email, u.role, u.status 

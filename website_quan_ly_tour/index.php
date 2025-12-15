@@ -118,7 +118,7 @@ match ($act) {
     'users/edit'     => $userController->edit(),
     'users/update'   => $userController->update(),
     'users/show'     => $userController->detail(),
-    'users/delete'   => $userController->delete(),
+    'users/delete'   => $userController->delete(),  
     'profile'        => $userController->profile(),
     'profile-update' => $userController->updateProfile(),
 
@@ -126,7 +126,7 @@ match ($act) {
     // ⭐ CATEGORIES
     // ===============================
     'categories'         => $categoryController->index(),
-    'category-add'       => $categoryController->add(),
+    'category-create'   => $categoryController->add(),
     'category-edit'      => $categoryController->edit($_GET['id'] ?? null),
     'category-delete'    => $categoryController->delete($_GET['id'] ?? null),
 
